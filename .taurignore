@@ -1,0 +1,4 @@
+# 忽略特定目录
+node_modules/
+target/
+

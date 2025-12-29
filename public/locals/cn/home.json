@@ -1,0 +1,10 @@
+{
+  "title": "UFACTORY Studio",
+  "ip_placeholder": "输入机械臂IP或点击搜索获取机械臂IP",
+  "search_server": "搜索服务器",
+  "connect": "连接",
+  "connecting": "正在连接中...",
+  "connect_success": "连接成功",
+  "connect_failed": "连接失败：服务器未准备好",
+  "select_correct_device": "请选择正确的设备"
+}

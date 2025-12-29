@@ -1,0 +1,11 @@
+{
+  "title_update_info": "Update Information",
+  "version_prefix": "✨(v{{version}})",
+  "no_content": "No release notes",
+  "cancel": "Cancel",
+  "download_now": "Download Now",
+  "software_update": "Software Update",
+  "speed_label": "Speed: ",
+  "download_complete_tip": "Package downloaded, click Install to continue",
+  "install_now": "Install Now"
+}

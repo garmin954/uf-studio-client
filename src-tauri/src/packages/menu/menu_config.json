@@ -1,0 +1,112 @@
+{
+    "submenus": [
+        {
+            "label": {
+                "zhCn": "窗口",
+                "enUs": "Window"
+            },
+            "enabled": true,
+            "items": [
+                {
+                    "id": "window_standard_size",
+                    "label": {
+                        "zhCn": "标准尺寸",
+                        "enUs": "Standard Size"
+                    },
+                    "enabled": true,
+                    "accelerator": "Ctrl+Alt+R"
+                },
+                {
+                    "id": "window_min_size",
+                    "label": {
+                        "zhCn": "最小尺寸",
+                        "enUs": "Minimum Size"
+                    },
+                    "enabled": true,
+                    "accelerator": null
+                },
+                {
+                    "id": "window_minimize",
+                    "label": {
+                        "zhCn": "最小化",
+                        "enUs": "Minimize"
+                    },
+                    "enabled": true,
+                    "accelerator": "Ctrl+Alt+M"
+                },
+                {
+                    "id": "window_fullscreen",
+                    "label": {
+                        "zhCn": "全屏",
+                        "enUs": "Fullscreen"
+                    },
+                    "enabled": true,
+                    "accelerator": "F11"
+                }
+            ]
+        },
+        {
+            "label": {
+                "zhCn": "语言",
+                "enUs": "Language"
+            },
+            "enabled": true,
+            "items": [
+                {
+                    "id": "language_zh_CN",
+                    "label": {
+                        "zhCn": "简体中文 ✔",
+                        "enUs": "简体中文"
+                    },
+                    "enabled": true,
+                    "accelerator": null
+                },
+                {
+                    "id": "language_en_US",
+                    "label": {
+                        "zhCn": "英文",
+                        "enUs": "English ✔"
+                    },
+                    "enabled": true,
+                    "accelerator": null
+                }
+            ]
+        },
+        {
+            "label": {
+                "zhCn": "工具",
+                "enUs": "Tools"
+            },
+            "enabled": true,
+            "items": [
+                {
+                    "id": "tool_search",
+                    "label": {
+                        "zhCn": "搜索",
+                        "enUs": "Search"
+                    },
+                    "enabled": true,
+                    "accelerator": "Ctrl+Alt+F"
+                },
+                {
+                    "id": "tool_refresh_page",
+                    "label": {
+                        "zhCn": "刷新页面",
+                        "enUs": "Refresh Page"
+                    },
+                    "enabled": true,
+                    "accelerator": "Ctrl+Alt+F5"
+                },
+                {
+                    "id": "tool_open_devtools",
+                    "label": {
+                        "zhCn": "打开调试工具",
+                        "enUs": "Open Devtools"
+                    },
+                    "enabled": true,
+                    "accelerator": "Ctrl+Alt+I"
+                }
+            ]
+        }
+    ]
+}

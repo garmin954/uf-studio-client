@@ -1,0 +1,13 @@
+# .rust-analyzer.toml
+[workspace]
+members = ["src-tauri"] # 只分析 Tauri 的 Rust 部分（src-tauri）
+
+# 排除前端目录（根据你的项目结构调整）
+exclude_dirs = [
+    "node_modules",
+    "src",            # 前端代码目录（如 React/Vue 代码）
+    "dist",
+    "public",
+    "target/debug",   # 排除调试产物
+    "target/release",
+]

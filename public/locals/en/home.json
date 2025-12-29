@@ -1,0 +1,10 @@
+{
+  "title": "UFACTORY Studio",
+  "ip_placeholder": "Input the IP address of the robot or click search button to find the robot's IP",
+  "search_server": "Search Server",
+  "connect": "Connect",
+  "connecting": "Connecting...",
+  "connect_success": "Connected",
+  "connect_failed": "Failed: The server is not ready",
+  "select_correct_device": "Please select a correct device"
+}

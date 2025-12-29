@@ -1,0 +1,224 @@
+.main-wrapper {
+    /* background: radial-gradient(ellipse at top left,rgba(255, 255, 255, 1) 40%,rgba(229, 229, 229, .9) 100%); */
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    background-color: #E9E9E9;
+}
+
+.search-wrapper {
+    width: 100%;
+    height: 100%;
+    /*background: radial-gradient(48% 135%, #FFF 50%, #E7E7E7 100%);*/
+    background-color: #E9E9E9;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+}
+
+.search-wrapper .xarm {
+    width: 34%;
+    max-width: 600px;
+    margin-top: 20px;
+}
+
+.search-wrapper .position-absolute {
+    /* position: absolute; */
+    text-align: center;
+    /* top: 20vh; */
+}
+
+.search-wrapper .top-title {
+    font-family: 'Avenir-Light', 'SourceHanSansCN-Light';
+    color: #000;
+}
+
+.search-wrapper .position-absolute .search {
+    height: 50px;
+    display: flex;
+    width: 100%;
+    position: relative;
+    background: #FFF;
+    border: 0 solid #C8C8C8;
+    box-shadow: 0 0 28px 0 rgba(227, 227, 227, 0.50);
+}
+
+.search-wrapper .position-absolute .search .hint {
+    width: 50vw;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #cfcfcf;
+    font-family: 'Avenir-Light', 'SourceHanSansCN-Light';
+    margin: 0;
+}
+
+.search-wrapper .position-absolute .search .hint img {
+    margin-right: 26px;
+}
+
+.search-wrapper .position-absolute .search .hint .ip-address {
+    color: #555;
+}
+
+.search-wrapper .position-absolute .search .hint .ip-input {
+    color: #555;
+    width: 100%;
+    height: 100%;
+    border: none;
+    outline: none;
+    padding: 0 18px;
+    font-family: 'Avenir-Light', 'SourceHanSansCN-Light';
+}
+
+.search-wrapper .position-absolute .search .hint .ip-input::-webkit-input-placeholder {
+    color: #c2c2c3;
+    font-size: 12px;
+}
+
+.search-wrapper .position-absolute .search .ip-list {
+    position: absolute;
+    left: 0;
+    top: 50px;
+    padding: 0;
+    background: #E2E2E2;
+    max-height: 30vh;
+    overflow-y: auto;
+    text-align: left;
+    text-indent: 25%;
+}
+
+.search-wrapper .position-absolute .search .ip-list li {
+    width: 50vw;
+    height: 40px;
+    line-height: 40px;
+    font-family: 'Avenir-Light', 'SourceHanSansCN-Light';
+    font-size: 12px;
+    color: #000;
+    letter-spacing: -0.05px;
+    cursor: pointer;
+}
+
+.search-wrapper .position-absolute .search .ip-list li:hover {
+    background: #D6D6D6;
+}
+
+.search-wrapper .position-absolute .search .search-btn {
+    /* position: absolute; */
+    height: 50px;
+    right: -108px;
+    font-family: 'BaiJamjuree', 'SourceCodePro-Light';
+    font-size: 14px;
+    color: #FFFFFF;
+    background: #888c91;
+    width: 140px !important;
+}
+
+.search-wrapper .position-absolute .search .search-btn:hover {
+    background: rgba(83, 87, 92, 0.86);
+}
+
+.connect-wrapper {
+    /*height: 10%;*/
+    margin-top: 20vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.connect-wrapper .connect-btn {
+    background: #0090ff;
+    font-size: 20px;
+    border-radius: 5px;
+    width: 140px !important;
+    height: 50px;
+    letter-spacing: 3px;
+}
+
+.connect-wrapper .connect-btn:hover {
+    background: #0090ff;
+}
+
+.connect-wrapper .title {
+    font-family: 'BaiJamjuree', 'SourceCodePro-Light';
+    font-size: 20px;
+    color: #444;
+    letter-spacing: -0.15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 50px;
+}
+
+.connect-wrapper .title img {
+    margin-right: 25px;
+    width: 28px;
+}
+
+.connect-wrapper .title h3 {
+    margin-right: 10px;
+}
+
+.connect-wrapper .title span {
+    font-size: 1.17em;
+}
+
+.com-btn {
+    height: 40px;
+    width: 108px;
+    line-height: 40px;
+    text-align: center;
+    border: none;
+    font-size: 14px;
+    color: #fff;
+    cursor: pointer;
+    transition: all .3s;
+    font-family: 'Avenir-Light', 'SourceHanSansCN-Light';
+}
+
+.ip-list::-webkit-scrollbar {
+    /*滚动条整体样式*/
+    width: 4px;
+    /*高宽分别对应横竖滚动条的尺寸*/
+    height: 4px;
+}
+
+.ip-list::-webkit-scrollbar-thumb {
+    /*滚动条里面小方块*/
+    border-radius: 5px;
+    -webkit-box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.2);
+    background: #D8D8D8;
+    ;
+}
+
+.ip-list::-webkit-scrollbar-track {
+    /*滚动条里面轨道*/
+    -webkit-box-shadow: inset 0 0 5px rgba(231, 231, 231, 0.4);
+    border-radius: 0;
+    background: rgba(231, 231, 231, 0.4);
+}
+
+input::-ms-input-placeholder {
+    text-align: center;
+}
+
+input::-webkit-input-placeholder {
+    text-align: center;
+}
+
+input {
+    text-align: center;
+}
+
+.main-wrapper .connect-tips {
+    position: absolute;
+    top: 10px;
+    margin: auto;
+    left: 0;
+    right: 0;
+    width: 250px;
+    color: red;
+    font-size: 15px;
+}

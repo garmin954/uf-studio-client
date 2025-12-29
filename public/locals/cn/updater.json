@@ -1,0 +1,11 @@
+{
+  "title_update_info": "版本更新信息",
+  "version_prefix": "✨(v{{version}})",
+  "no_content": "暂无版本信息",
+  "cancel": "取消",
+  "download_now": "立即下载",
+  "software_update": "软件更新",
+  "speed_label": "网速：",
+  "download_complete_tip": "安装包下载完成，点击立即安装",
+  "install_now": "立即安装"
+}
