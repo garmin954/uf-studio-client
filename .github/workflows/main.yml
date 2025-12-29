@@ -1,5 +1,6 @@
 name: Tauri Release
 
+# push 到 main 时自动构建并发布（包含 tag 和 updater 的 release.json）
 on:
   push:
     branches:
@@ -10,7 +11,9 @@ jobs:
     strategy:
       matrix:
         platform: [ubuntu-latest, windows-latest, macos-latest]
+
     runs-on: ${{ matrix.platform }}
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -19,59 +22,27 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: "pnpm"
-          cache-dependency-path: "pnpm-lock.yaml"
+          cache: "npm"
 
-      # 步骤1：安装 pnpm 并记录绝对路径（核心兜底逻辑）
-      - name: Install pnpm and get absolute path
-        id: get_pnpm_path
-        shell: bash
-        run: |
-          # 强制安装 pnpm 到固定目录
-          npm install -g pnpm --force
-          # 获取 pnpm 绝对路径（跨平台兼容）
-          PNPM_PATH=$(which pnpm || where pnpm | findstr /v "pnpm.cmd" | head -n 1)
-          # Windows 下特殊处理：findstr 过滤掉 cmd 后缀，取 exe 路径
-          if [[ "$RUNNER_OS" == "Windows" ]]; then
-            PNPM_PATH=$(where pnpm | findstr /i "pnpm.exe" | head -n 1)
-          fi
-          # 输出绝对路径到 Actions 变量
-          echo "pnpm_path=$PNPM_PATH" >> $GITHUB_OUTPUT
-          # 验证路径是否有效
-          echo "PNPM absolute path: $PNPM_PATH"
-          $PNPM_PATH --version
+      - name: Enable corepack (npm)
+        run: corepack enable
 
-      # 步骤2：用绝对路径安装依赖（彻底绕开 PATH 问题）
-      - name: Install frontend deps (absolute path)
-        run: ${{ steps.get_pnpm_path.outputs.pnpm_path }} install --frozen-lockfile
+      - name: Install frontend deps
+        run: npm install
 
-      # Linux 平台 Tauri 系统依赖
-      - name: Install Tauri dependencies (Linux)
-        if: matrix.platform == 'ubuntu-latest'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.0-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev patchelf
-
-      # macOS 可选依赖
-      - name: Install macOS dependencies (optional)
-        if: matrix.platform == 'macos-latest'
-        run: |
-          brew install librsvg || true
-
-      # 步骤3：用绝对路径执行 Tauri 构建（tauri-action 兜底）
+      # 使用官方 tauri-action：
+      # 1. 依据 tauri.conf.json / package.json 里的 version 自动生成 tag（vX.Y.Z）
+      # 2. 创建 GitHub Release 并上传三平台安装包
+      # 3. 因为 tauri.conf.json 里启用了 createUpdaterArtifacts，会自动生成 updater 的 latest.json（即你要的 release.json 结构）
       - name: Build & publish Tauri app
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
-          # 强制指定 pnpm 路径给 tauri-action
-          PNPM: ${{ steps.get_pnpm_path.outputs.pnpm_path }}
         with:
           tagName: v__VERSION__
           releaseName: "UFACTORY-Studio v__VERSION__"
           releaseBody: "自动构建的 Tauri 版本"
           releaseDraft: false
           prerelease: false
-          # 手动指定包管理器命令（用绝对路径）
-          packageManager: ${{ steps.get_pnpm_path.outputs.pnpm_path }}
