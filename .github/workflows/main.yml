@@ -1,18 +1,50 @@
-  - name: tauri-build
-  # You may pin to the exact commit or the version.
-  # uses: JonasKruckenberg/tauri-build@406f9292d464c04add8c74e8ed1ed4105b91a20e
-  uses: JonasKruckenberg/tauri-build@v1.0.3
-  with:
-    # Binary to use to build the application
-    runner: # optional
-    # Additional arguments for the build command
-    args: # optional
-    # Path to the root of the project
-    projectPath: # optional
-    # Path to the tauri.conf.json file if you want a configuration different from the default one
-    configPath: # optional
-    # The target triple to build against
-    target: # optional
-    # Builds with the debug flag
-    debug: # optional
-          
+name: Tauri Release
+
+# push 到 main 时自动构建并发布（包含 tag 和 updater 的 release.json）
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-release:
+    strategy:
+      matrix:
+        platform: [ubuntu-latest, windows-latest, macos-latest]
+
+    runs-on: ${{ matrix.platform }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - name: Install frontend deps
+        run: pnpm install --frozen-lockfile
+
+      # 使用官方 tauri-action：
+      # 1. 依据 tauri.conf.json / package.json 里的 version 自动生成 tag（vX.Y.Z）
+      # 2. 创建 GitHub Release 并上传三平台安装包
+      # 3. 因为 tauri.conf.json 里启用了 createUpdaterArtifacts，会自动生成 updater 的 latest.json（即你要的 release.json 结构）
+      - name: Build & publish Tauri app
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+        with:
+          tagName: v__VERSION__
+          releaseName: "UFACTORY-Studio v__VERSION__"
+          releaseBody: "自动构建的 Tauri 版本"
+          releaseDraft: false
+          prerelease: false
