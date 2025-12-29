@@ -22,10 +22,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: "pnpm"
+          cache: "npm"
 
-      - name: Enable corepack (pnpm)
-        run: corepack enable
+      - name: Install pnpm globally
+        run: npm install -g pnpm
 
       - name: Install frontend deps
         run: pnpm install

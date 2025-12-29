@@ -59,12 +59,3 @@ pub fn run() {
         .run(tauri::generate_context!())
         .expect("run fail");
 }
-
-use std::process::Command;
-use winreg::{enums::HKEY_CURRENT_USER, RegKey};
-// 检测旧版是否存在
-fn is_old_version_installed() -> bool {
-    let hkcu = RegKey::predef(HKEY_CURRENT_USER);
-    let uninstall_path = "Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\你的应用名称";
-    hkcu.open_subkey(uninstall_path).is_ok()
-}
