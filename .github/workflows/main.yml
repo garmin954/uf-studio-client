@@ -22,15 +22,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: "pnpm"
+          cache: "npm"
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 9
+      - name: Enable corepack (pnpm)
+        run: corepack enable
 
       - name: Install frontend deps
-        run: pnpm install --frozen-lockfile
+        run: pnpm install
 
       # 使用官方 tauri-action：
       # 1. 依据 tauri.conf.json / package.json 里的 version 自动生成 tag（vX.Y.Z）
