@@ -1,6 +1,5 @@
 name: Tauri Release
 
-# push 到 main 时自动构建并发布（包含 tag 和 updater 的 release.json）
 on:
   push:
     branches:
@@ -20,29 +19,34 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: "pnpm"  # 关键修复：改为 pnpm 缓存（匹配你的包管理器）
-          cache-dependency-path: "pnpm-lock.yaml"  # 指定 pnpm 锁文件路径
+          cache: "pnpm"
+          cache-dependency-path: "pnpm-lock.yaml"
 
-      - name: Enable corepack (pnpm)
-        run: corepack enable
+      # 关键修复：显式安装 pnpm 并配置 PATH（解决找不到 pnpm 的问题）
+      - name: Install pnpm
+        run: |
+          corepack enable
+          corepack prepare pnpm@latest --activate
+          # 验证 pnpm 是否安装成功
+          pnpm --version
 
       - name: Install frontend deps
-        run: pnpm install --frozen-lockfile  # 加 --frozen-lockfile 确保依赖版本一致
+        run: pnpm install --frozen-lockfile
 
-      # 补充：Linux 平台需要安装 Tauri 构建依赖（必须）
+      # Linux 平台 Tauri 依赖
       - name: Install Tauri dependencies (Linux)
         if: matrix.platform == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.0-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev patchelf
 
-      # 补充：macOS 平台可选依赖（解决签名/构建问题）
+      # macOS 可选依赖
       - name: Install macOS dependencies (optional)
         if: matrix.platform == 'macos-latest'
         run: |
-          brew install librsvg
+          brew install librsvg || true
 
-      # 使用官方 tauri-action 构建并发布
+      # 构建并发布 Tauri 应用
       - name: Build & publish Tauri app
         uses: tauri-apps/tauri-action@v0
         env:
@@ -50,10 +54,9 @@ jobs:
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
         with:
-          tagName: v__VERSION__  # __VERSION__ 会自动替换为 package.json 中的 version
+          tagName: v__VERSION__
           releaseName: "UFACTORY-Studio v__VERSION__"
           releaseBody: "自动构建的 Tauri 版本"
           releaseDraft: false
           prerelease: false
-          # 显式指定 pnpm 作为包管理器（避免自动检测错误）
           packageManager: "pnpm"
