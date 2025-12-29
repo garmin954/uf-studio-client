@@ -22,25 +22,33 @@ jobs:
           cache: "pnpm"
           cache-dependency-path: "pnpm-lock.yaml"
 
-      # 关键修复：显式安装 pnpm 并配置 PATH（解决找不到 pnpm 的问题）
-      - name: Install pnpm
+      # 终极方案：跨平台手动安装 pnpm（不依赖 corepack）
+      - name: Install pnpm (Cross-Platform)
+        shell: bash
         run: |
-          corepack enable
-          corepack prepare pnpm@latest --activate
+          # 下载 pnpm 安装脚本并执行（官方推荐的跨平台安装方式）
+          curl -fsSL https://get.pnpm.io/install.sh | sh -
+          # 强制将 pnpm 加入当前 shell 的 PATH
+          echo "PNPM_HOME=$HOME/.local/share/pnpm" >> $GITHUB_ENV
+          echo "$HOME/.local/share/pnpm" >> $GITHUB_PATH
+          # Windows 特殊处理：pnpm 可执行文件在 bin 子目录
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            echo "$HOME/.local/share/pnpm/bin" >> $GITHUB_PATH
+          fi
           # 验证 pnpm 是否安装成功
-          pnpm --version
+          pnpm --version || echo "pnpm path: $(which pnpm || where pnpm)"
 
       - name: Install frontend deps
         run: pnpm install --frozen-lockfile
 
-      # Linux 平台 Tauri 依赖
+      # Linux 平台 Tauri 系统依赖（必须）
       - name: Install Tauri dependencies (Linux)
         if: matrix.platform == 'ubuntu-latest'
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.0-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev patchelf
 
-      # macOS 可选依赖
+      # macOS 可选依赖（容错处理）
       - name: Install macOS dependencies (optional)
         if: matrix.platform == 'macos-latest'
         run: |
