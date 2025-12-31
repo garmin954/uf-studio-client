@@ -115,7 +115,7 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: pnpm
-          # cache-dependency-path: pnpm-lock.yaml
+          cache-dependency-path: pnpm-lock.yaml
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
@@ -139,8 +139,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tauriScript: pnpm
-          args: tauri build
           tagName: ${{ needs.prepare-release.outputs.tag_name }}
           releaseName: ${{ needs.prepare-release.outputs.release_name }}
           releaseBody: ${{ needs.prepare-release.outputs.release_notes }}
