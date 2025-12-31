@@ -13,7 +13,6 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::new().build())
         .invoke_handler(tauri::generate_handler![
             commands::system::app_exit,
-            commands::system::open_studio_window,
             commands::system::start_udp_broadcast,
             commands::system::stop_udp_broadcast,
             commands::system::ping,

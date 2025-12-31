@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 
-const file = "release.md";
+// markdown file path, default to release.md, can be overridden by argv[2]
+const file = process.argv[2] || "release.md";
 
 let forceUpdate = false;
 const description = { cn: "", en: "" };
@@ -62,4 +63,3 @@ const notesObj = {
 };
 
 process.stdout.write(JSON.stringify(notesObj));
-

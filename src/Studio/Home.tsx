@@ -163,7 +163,7 @@ export default function StudioHome() {
                         setConnectTip("");
                     }
                     localStorage.setItem("selectedIp", selectedIp);
-                    navigate(`/studio?url=${url}`);
+                    navigate(`/app/studio?url=${url}`);
                 } else {
                     setTipWithAutoClear(t("connect_failed"));
                     return;

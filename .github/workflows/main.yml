@@ -33,6 +33,7 @@ jobs:
       tag_name: ${{ steps.meta.outputs.tag_name }}
       release_name: ${{ steps.meta.outputs.release_name }}
       release_notes: ${{ steps.meta.outputs.release_notes }}
+      latest_notes: ${{ steps.meta.outputs.latest_notes }}
       prerelease: ${{ steps.meta.outputs.prerelease }}
       release_id: ${{ steps.create_release.outputs.release_id }}
     steps:
@@ -56,16 +57,24 @@ jobs:
           echo "tag_name=v$VERSION" >> "$GITHUB_OUTPUT"
           echo "release_name=UFACTORY Studio v$VERSION" >> "$GITHUB_OUTPUT"
 
-          # Default structured JSON string for `latest.json.notes`
-          NOTES="{\"force_update\":false,\"description\":{\"cn\":\"\",\"en\":\"\"},\"content\":{\"cn\":\"\",\"en\":\"\"}}"
+          # Default structured JSON string for notes
+          RELEASE_NOTES=""
+          LATEST_NOTES="{\"force_update\":false,\"description\":{\"cn\":\"\",\"en\":\"\"},\"content\":{\"cn\":\"\",\"en\":\"\"}}"
 
-          # If release.md exists, build structured JSON string for `latest.json.notes` via node script
+          # If release.md exists, build structured JSON string for GitHub release body via node script
           if [[ -f "release.md" ]]; then
             echo "Using release.md for release notes"
-            NOTES=$(node scripts/build-release-notes.mjs)
+            RELEASE_NOTES=$(node scripts/build-release-notes.mjs release.md)
           fi
 
-          echo "release_notes=$NOTES" >> "$GITHUB_OUTPUT"
+          # If latest.md exists, build structured JSON string for latest.json.notes via node script
+          if [[ -f "latest.md" ]]; then
+            echo "Using latest.md for latest.json notes"
+            LATEST_NOTES=$(node scripts/build-release-notes.mjs latest.md)
+          fi
+
+          echo "release_notes=$RELEASE_NOTES" >> "$GITHUB_OUTPUT"
+          echo "latest_notes=$LATEST_NOTES" >> "$GITHUB_OUTPUT"
 
           PRERELEASE="${{ github.event.inputs.prerelease }}"
           if [[ -z "$PRERELEASE" ]]; then
@@ -148,7 +157,8 @@ jobs:
         with:
           tagName: ${{ needs.prepare-release.outputs.tag_name }}
           releaseName: ${{ needs.prepare-release.outputs.release_name }}
-          releaseBody: ${{ needs.prepare-release.outputs.release_notes }}
+          # Use latest_notes for latest.json.notes
+          releaseBody: ${{ needs.prepare-release.outputs.latest_notes }}
           releaseDraft: false
           prerelease: ${{ needs.prepare-release.outputs.prerelease }}
           releaseId: ${{ needs.prepare-release.outputs.release_id }}

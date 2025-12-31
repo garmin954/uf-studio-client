@@ -79,59 +79,6 @@
   }
 }
 
-html,
-body {
-  margin: 0;
-  height: 100%;
-  width: 100%;
-}
-
-@font-face {
-  font-family: 'Avenir-Light';
-  src: url('@/assets/fonts/Avenir-Light.ttf');
-}
-
-@font-face {
-  font-family: 'BaiJamjuree';
-  src: url('@/assets/fonts/BaiJamjuree.ttf');
-}
-
-@font-face {
-  font-family: 'SourceCodePro-Light';
-  src: url('@/assets/fonts/SourceCodePro-Light.otf');
-}
-
-@font-face {
-  font-family: 'SourceHanSansCN-Light';
-  src: url('@/assets/fonts/SourceHanSansCN-Light.otf');
-}
-
-button {
-  outline: none;
-}
-
-li {
-  list-style: none;
-}
-
-ul {
-  padding: 0;
-}
-
-a {
-  text-decoration: none;
-}
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  margin: 0;
-}
-
-
 #root {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;

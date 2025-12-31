@@ -6,9 +6,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useEffect, useState } from "react";
-import "github-markdown-css/github-markdown.css";
+import 'star-markdown-css'
 import { useTranslation } from "react-i18next";
-
+import ReactMarkdown from 'react-markdown';
 type Props = {
   children?: React.ReactNode;
   onInstall: () => void;
@@ -47,11 +47,10 @@ export default function ReleaseDescDialog(props: Props) {
         </DialogHeader>
         <div className="bg-gray-100 p-4 rounded-lg">
           <div
-            className="py-6 h-[60vh] overflow-y-auto text-xl markdown-body !bg-transparent"
-            dangerouslySetInnerHTML={{
-              __html: props.content ?? t("no_content"),
-            }}
-          ></div>
+            className="py-6 h-[60vh] overflow-y-auto text-xl markdown-body !bg-transparent star-markdown star-markdown-dark "
+          >
+            <ReactMarkdown >{props.content}</ReactMarkdown>
+          </div>
         </div>
 
         <div className="flex justify-center gap-4">

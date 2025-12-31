@@ -4,6 +4,7 @@ import {
   checkUpdater,
   UpdaterState,
   downloadApp,
+  closeDownloadDialog,
 } from "@/store/features/updater";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -28,6 +29,7 @@ export default function LogicUpdater(props: Props) {
     switch (state.step) {
       case UPDATER_STEP.NORMAL:
       case UPDATER_STEP.CHECK:
+        dispatch(closeDownloadDialog())
         dispatch(checkUpdater(isBeta)).then(({ payload }) => {
           // 有新版本 弹出更新信息
           if (payload.code === 0 && !payload.data?.is_latest) {

@@ -53,8 +53,8 @@ export const downloadApp = createAsyncThunk('updater/downloadApp', (_data, { dis
 // 安装
 export const installApp = createAsyncThunk('updater/installApp', async (_data, { }) => {
     // 关闭服务
-    await invoke("quit_server");
-    await update.install();
+    let res = await update.install();
+    console.log('installApp', res);
     // 安装完成后重启应用以加载新版本（兼容 single-instance）
     // await invoke("restart_app");
 })
@@ -259,4 +259,4 @@ const slice = createSlice({
 
 export default slice.reducer
 export type UpdaterState = ReturnType<typeof slice.getInitialState>;
-export const { setUpdaterStep } = slice.actions
+export const { setUpdaterStep, closeDownloadDialog } = slice.actions

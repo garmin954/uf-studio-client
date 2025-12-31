@@ -17,25 +17,6 @@ pub async fn app_exit<R: tauri::Runtime>(app: tauri::AppHandle<R>) {
     app.exit(0);
 }
 
-/// 打开 Studio 窗口
-#[tauri::command]
-pub fn open_studio_window<R: tauri::Runtime>(app: tauri::AppHandle<R>, ip: String, lang: String) {
-    println!("Opening studio window...");
-    tauri::async_runtime::spawn(async move {
-        if let Some(webview_window) = app.get_webview_window("studio") {
-            // 修改窗口地址
-            let new_url = format!("/studio?ip={}&lang={}", ip, lang); // 根据 IP 构造新的 URL
-            if let Err(e) = webview_window.eval(&format!("window.location.href = '{}';", new_url)) {
-                eprintln!("Failed to change window location: {}", e);
-            }
-
-            let _ = webview_window.unminimize();
-            let _ = webview_window.show();
-            let _ = webview_window.set_focus();
-        }
-    });
-}
-
 #[derive(Serialize, Clone)]
 struct ArmIpIntro {
     addr_type: String,

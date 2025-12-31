@@ -8,27 +8,34 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { UPDATER_STEP } from "@/lib/constant";
 import { formatBytes, formatSpeed } from "@/lib/utils";
-import { RootDispatch, RootState } from "@/store";
-import { installApp, UpdaterState } from "@/store/features/updater";
+import { RootDispatch } from "@/store";
+import { installApp } from "@/store/features/updater";
 import { useThrottleEffect } from "ahooks";
 import { useMemo, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { useTranslation } from "react-i18next";
+import { useAppSelector } from "@/hooks/reduxHooks";
 
 export default function DownloadProgress() {
-  const state = useSelector<RootState, UpdaterState>((state) => state.updater);
+  const showDialog = useAppSelector(state => state.updater.download.showDialog);
+  const totalSize = useAppSelector(state => state.updater.download.totalSize);
+  const downloaded = useAppSelector(state => state.updater.download.downloaded);
+  const startTime = useAppSelector(state => state.updater.download.startTime);
+  const progress = useAppSelector(state => state.updater.download.progress);
+  const step = useAppSelector(state => state.updater.step);
+
   const dispatch = useDispatch<RootDispatch>();
   const { t } = useTranslation("updater");
 
   // 安装包大小
   const total = useMemo(() => {
-    return formatBytes(state.download.totalSize);
-  }, [state.download.totalSize]);
+    return formatBytes(totalSize);
+  }, [totalSize]);
 
   // 已下载大小
   const download = useMemo(() => {
-    return formatBytes(state.download.downloaded);
-  }, [state.download.downloaded]);
+    return formatBytes(downloaded);
+  }, [downloaded]);
 
   // 下载速度
   const [speed, setSpeed] = useState("");
@@ -36,17 +43,17 @@ export default function DownloadProgress() {
     () => {
       const currentTime = Date.now();
       const elapsedTimeInSeconds =
-        (currentTime - state.download.startTime) / 1000;
-      const speed = state.download.downloaded / elapsedTimeInSeconds;
+        (currentTime - startTime) / 1000;
+      const speed = downloaded / elapsedTimeInSeconds;
       const s = formatSpeed(speed);
       setSpeed(s);
     },
-    [state.download.downloaded],
+    [downloaded],
     { wait: 1000 }
   );
 
   return (
-    <Dialog open={state.download.showDialog}>
+    <Dialog open={showDialog}>
       <DialogContent className="sm:max-w-[25rem] rounded-sm" top={10}>
         <DialogHeader>
           <DialogTitle className="text-center text-large">
@@ -54,10 +61,10 @@ export default function DownloadProgress() {
           </DialogTitle>
         </DialogHeader>
 
-        {state.step === UPDATER_STEP.DOWNLOAD ? (
-          <div className="flex flex-col gap-4 py-[1rem] h-[5rem] box-border">
-            <Progress className="h-[1.5rem]" value={state.download.progress} />
-            <div className="flex justify-between uf-font-regular">
+        {step === UPDATER_STEP.DOWNLOAD ? (
+          <div className="flex flex-col gap-4 py-[1rem] h-[4.8rem] box-border">
+            <Progress className="h-[1rem]" value={progress} />
+            <div className="flex justify-between uf-font-regular text-sm">
               <span>
                 {t("speed_label")}
                 {speed}
