@@ -57,14 +57,14 @@ jobs:
           echo "tag_name=v$VERSION" >> "$GITHUB_OUTPUT"
           echo "release_name=UFACTORY Studio v$VERSION" >> "$GITHUB_OUTPUT"
 
-          # Default structured JSON string for notes
+          # Default values
           RELEASE_NOTES=""
           LATEST_NOTES="{\"force_update\":false,\"description\":{\"cn\":\"\",\"en\":\"\"},\"content\":{\"cn\":\"\",\"en\":\"\"}}"
 
-          # If release.md exists, build structured JSON string for GitHub release body via node script
+          # If release.md exists, use its markdown content as GitHub release body
           if [[ -f "release.md" ]]; then
             echo "Using release.md for release notes"
-            RELEASE_NOTES=$(node scripts/build-release-notes.mjs release.md)
+            RELEASE_NOTES="$(cat release.md)"
           fi
 
           # If latest.md exists, build structured JSON string for latest.json.notes via node script
@@ -73,7 +73,11 @@ jobs:
             LATEST_NOTES=$(node scripts/build-release-notes.mjs latest.md)
           fi
 
-          echo "release_notes=$RELEASE_NOTES" >> "$GITHUB_OUTPUT"
+          {
+            echo "release_notes<<EOF"
+            echo "$RELEASE_NOTES"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
           echo "latest_notes=$LATEST_NOTES" >> "$GITHUB_OUTPUT"
 
           PRERELEASE="${{ github.event.inputs.prerelease }}"
