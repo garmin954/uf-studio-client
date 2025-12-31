@@ -59,60 +59,10 @@ jobs:
           # Default structured JSON string for `latest.json.notes`
           NOTES="{\"force_update\":false,\"description\":{\"cn\":\"\",\"en\":\"\"},\"content\":{\"cn\":\"\",\"en\":\"\"}}"
 
-          # If release.md exists, build structured JSON string for `latest.json.notes`
+          # If release.md exists, build structured JSON string for `latest.json.notes` via node script
           if [[ -f "release.md" ]]; then
             echo "Using release.md for release notes"
-            NOTES=$(python -c '
-import json
-
-force_update = False
-description = {"cn": "", "en": ""}
-content = {"cn": "", "en": ""}
-
-current_section = None
-current_lang = None
-
-def norm_lang(s: str):
-    s = s.strip().lower()
-    if s in ("zh", "zhcn", "zh-cn"):
-        return "cn"
-    if s in ("en", "enus", "en-us"):
-        return "en"
-    return None
-
-with open("release.md", "r", encoding="utf-8") as f:
-    for line in f:
-        raw = line.rstrip("\n")
-        stripped = raw.strip()
-        if not stripped:
-            continue
-        # ignore inline JSON template lines in the markdown
-        if stripped.startswith("{") and "\"force_update\"" in stripped:
-            continue
-        if stripped.startswith("# "):
-            current_section = stripped[2:].strip().lower()
-            current_lang = None
-            continue
-        if stripped.startswith("## "):
-            current_lang = norm_lang(stripped[3:])
-            continue
-        if current_section == "force_update":
-            v = stripped.lower()
-            force_update = v in ("true", "1", "yes", "y")
-        elif current_section == "description" and current_lang in ("cn", "en"):
-            key = current_lang
-            description[key] = (description[key] + "\n" if description[key] else "") + raw
-        elif current_section == "content" and current_lang in ("cn", "en"):
-            key = current_lang
-            content[key] = (content[key] + "\n" if content[key] else "") + raw
-
-notes_obj = {
-    "force_update": force_update,
-    "description": description,
-    "content": content,
-}
-print(json.dumps(notes_obj, ensure_ascii=False))
-')
+            NOTES=$(node scripts/build-release-notes.mjs)
           fi
 
           echo "release_notes=$NOTES" >> "$GITHUB_OUTPUT"
