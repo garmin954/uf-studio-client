@@ -1,11 +1,17 @@
 import { UPDATER_STEP } from "@/lib/constant";
+import i18n from "@/lib/i18n";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { invoke } from "@tauri-apps/api/core";
 import { check, Update } from "@tauri-apps/plugin-updater";
 import { toast } from "sonner";
-
+let updater_loading: string | number | undefined = undefined;
 let update: Update
 
+// helper: always use "updater" namespace
+const tUpdater = (key: string, options?: any) =>
+    i18n.t(key, { ns: "updater", ...options }) as string;
+
+console.log('i18n test', i18n.language, i18n.t("updater.checking_update"));
 export const checkUpdater = createAsyncThunk<any, boolean>('updater/checkUpdate', async (isBeta = false) => {
     await check();
     return await invoke(`set_${isBeta ? "beta" : "stable"}_updater`);
@@ -88,8 +94,14 @@ export const downloadInstall = createAsyncThunk('updater/downloadInstall', (_dat
 
 const UpdaterData = {
     force_update: false,
-    description: "",
-    content: "",
+    description: {
+        cn: "",
+        en: "",
+    },
+    content: {
+        cn: "",
+        en: "",
+    },
 }
 
 export const fetchHistoryReleases = createAsyncThunk<typeof UpdaterData, string>('updater/fetchHistoryReleases', (version, { }) => {
@@ -133,21 +145,27 @@ const slice = createSlice({
     extraReducers: (builder) => {
         /*******************检查更新****************** */
         builder.addCase(checkUpdater.pending, (state) => {
+            console.log('checkUpdater pending');
+            updater_loading = toast.loading(tUpdater("checking_update"));
             state.isLoading = true;
         })
         builder.addCase(checkUpdater.rejected, (state, { error }) => {
-            toast.error("检查更新失败", {
+            toast.error(tUpdater("check_update_failed"), {
                 description: error.message,
                 position: "top-center",
             });
             state.isLoading = false;
+            toast.dismiss(updater_loading);
         })
         builder.addCase(checkUpdater.fulfilled, (state, { payload: up }) => {
+            toast.dismiss(updater_loading);
+
             state.isLoading = false;
             const { code, data } = up
+            console.log('checkUpdater fulfilled', up);
 
             if (code === 0 && data?.is_latest) {
-                toast.info("当前已经是最新版本", {
+                toast.info(tUpdater("current_version_is_latest"), {
                     position: "top-center",
                 });
                 state.step = UPDATER_STEP.NORMAL
@@ -183,7 +201,7 @@ const slice = createSlice({
         })
 
         builder.addCase(downloadInstall.rejected, (state, { error }) => {
-            toast.error("下载安装失败", {
+            toast.error(tUpdater("download_install_failed"), {
                 description: error.message,
                 position: "top-center",
             });
@@ -205,7 +223,7 @@ const slice = createSlice({
         })
 
         builder.addCase(downloadApp.rejected, (state, { error }) => {
-            toast.error("下载安装失败", {
+            toast.error(tUpdater("download_install_failed"), {
                 description: error.message,
                 position: "top-center",
             });
@@ -214,14 +232,20 @@ const slice = createSlice({
         })
 
         builder.addCase(fetchHistoryReleases.rejected, () => {
-            toast.error("获取历史版本失败");
+            toast.error(tUpdater("fetch_history_releases_failed"));
         })
 
         builder.addCase(fetchHistoryReleases.fulfilled, (state, { payload }) => {
             const {
                 force_update = false,
-                description = "",
-                content = "",
+                description = {
+                    cn: "",
+                    en: "",
+                },
+                content = {
+                    cn: "",
+                    en: "",
+                },
             } = payload
 
             state.updater.current.force_update = force_update

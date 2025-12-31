@@ -12,10 +12,15 @@ pub struct Release {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct LanguageText {
+    pub cn: String,
+    pub en: String,
+}
+#[derive(Debug, Serialize, Deserialize)]
 pub struct Notes {
     pub force_update: bool,
-    pub description: String,
-    pub content: String,
+    pub description: LanguageText,
+    pub content: LanguageText,
 }
 
 #[tauri::command]
@@ -26,7 +31,7 @@ pub async fn fetch_history_releases<R: tauri::Runtime>(
 ) -> Result<Notes, String> {
     // 目标 URL
     let url = format!(
-        "http://192.168.1.19/releases/xarm/xarm_tool/history/{}.json",
+        "https://github.com/garmin954/uf-studio-client/releases/download/v{}/latest.json",
         version
     );
 

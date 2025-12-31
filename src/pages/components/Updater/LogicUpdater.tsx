@@ -11,12 +11,14 @@ import { useDispatch, useSelector } from "react-redux";
 import ReleaseDescDialog from "./ReleaseDescDialog";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import DownloadProgress from "./DownloadProgress";
+import { useTranslation } from "react-i18next";
 
 interface Props {
   className?: string;
   isBeta?: boolean;
 }
 export default function LogicUpdater(props: Props) {
+  const { i18n } = useTranslation("updater");
   const { isBeta = false } = props;
   const state = useSelector<RootState, UpdaterState>((state) => state.updater);
   const dispatch = useDispatch<RootDispatch>();
@@ -44,11 +46,9 @@ export default function LogicUpdater(props: Props) {
 
   useEffect(() => {
     WebviewWindow.getByLabel("main").then(async (win) => {
-      win?.listen("check_updates", () => {
-        onUpdate();
-      });
+      win?.listen("check_updates", onUpdate);
     });
-  });
+  }, []);
 
 
   return (
@@ -57,7 +57,7 @@ export default function LogicUpdater(props: Props) {
         show={showDesc}
         onInstall={() => dispatch(downloadApp())}
         onClose={() => setShowDesc(false)}
-        content={upd.body.content}
+        content={i18n.language === "cn" ? upd.body.content.cn : upd.body.content.en}
         version={upd.version}
       />
 

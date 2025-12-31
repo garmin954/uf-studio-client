@@ -7,13 +7,13 @@ const Toaster = ({ ...props }: ToasterProps) => {
   return (
     <Sonner
       richColors
-      closeButton
+      closeButton={false}
       className="toaster group flex justify-center"
       position="top-center"
       toastOptions={{
         classNames: {
           toast:
-            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg min-w-[150px] w-fit justify-center",
+            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg !px-6 !w-fit justify-center",
           description: "group-[.toast]:text-muted-foreground",
           actionButton:
             "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",

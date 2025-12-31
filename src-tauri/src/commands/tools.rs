@@ -54,17 +54,18 @@ pub async fn set_stable_updater<R: tauri::Runtime>(
         i18n::tr("开始检查生产版更新", "Checking stable updates")
     );
 
-    let update_url =
-        match tauri::Url::parse("http://192.168.1.19/releases/xarm/xarm_tool/releases.json") {
-            Ok(url) => url,
-            Err(e) => {
-                return Response::error(format!(
-                    "{}: {}",
-                    i18n::tr("解析更新URL失败", "Failed to parse update URL"),
-                    e
-                ))
-            }
-        };
+    let update_url = match tauri::Url::parse(
+        "https://github.com/garmin954/uf-studio-client/releases/latest/download/latest.json",
+    ) {
+        Ok(url) => url,
+        Err(e) => {
+            return Response::error(format!(
+                "{}: {}",
+                i18n::tr("解析更新URL失败", "Failed to parse update URL"),
+                e
+            ))
+        }
+    };
 
     set_updater_url(app, webview, update_url).await
 }

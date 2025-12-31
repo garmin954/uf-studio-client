@@ -9,6 +9,7 @@ import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { Provider } from "react-redux";
 import { store } from "./store";
 import { ThemeProvider } from "./pages/components/theme/ThemeProvider";
+import { Toaster } from "./components/ui/sonner";
 
 function App() {
   useEffect(() => {
@@ -35,7 +36,7 @@ function App() {
             }}
           >
             <RouterConfig />
-            {/* <Toaster /> */}
+            <Toaster />
           </BrowserRouter>
         </Provider>
       </ThemeProvider>

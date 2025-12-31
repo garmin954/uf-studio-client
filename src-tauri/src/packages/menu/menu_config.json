@@ -80,6 +80,15 @@
             "enabled": true,
             "items": [
                 {
+                    "id": "tool_check_updates",
+                    "label": {
+                        "zhCn": "检查更新",
+                        "enUs": "Check Update"
+                    },
+                    "enabled": true,
+                    "accelerator": null
+                },
+                {
                     "id": "tool_search",
                     "label": {
                         "zhCn": "搜索",

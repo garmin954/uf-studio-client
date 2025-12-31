@@ -16,8 +16,12 @@ i18n
   .use(initReactI18next)
   .use(LanguageDetector)
   .init<HttpBackendOptions>({
+    // 显式设置初始语言，避免 language 为 undefined
     lng: savedLanguage,
     fallbackLng: "cn",
+    // 预加载常用命名空间，确保在非 React 环境（如 Redux slice）也可直接使用 i18n.t("updater.xxx")
+    ns: ["home", "updater"],
+    defaultNS: "home",
     interpolation: {
       escapeValue: false,
     },
@@ -28,6 +32,8 @@ i18n
       },
       parse: (data) => JSON.parse(data),
     },
+    // 让初始化同步完成，有利于在导入时立即获取语言和翻译
+    initImmediate: false,
   });
 
 export default i18n;

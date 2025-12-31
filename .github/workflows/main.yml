@@ -56,10 +56,66 @@ jobs:
           echo "tag_name=v$VERSION" >> "$GITHUB_OUTPUT"
           echo "release_name=UFACTORY Studio v$VERSION" >> "$GITHUB_OUTPUT"
 
-          NOTES="${{ github.event.inputs.notes }}"
-          if [[ -z "$NOTES" ]]; then
-            NOTES="See the changelog for details."
+          # Build structured JSON string for `latest.json.notes` based on release.md
+          if [[ -f "release.md" ]]; then
+            echo "Using release.md for release notes"
+            NOTES=$(python - << 'PY'
+import json
+
+force_update = False
+description = {"cn": "", "en": ""}
+content = {"cn": "", "en": ""}
+
+current_section = None
+current_lang = None
+
+def norm_lang(s: str):
+    s = s.strip().lower()
+    if s in ("zh", "zhcn", "zh-cn"):
+        return "cn"
+    if s in ("en", "enus", "en-us"):
+        return "en"
+    return None
+
+with open("release.md", "r", encoding="utf-8") as f:
+    for line in f:
+        raw = line.rstrip("\n")
+        stripped = raw.strip()
+        if not stripped:
+            continue
+        # ignore inline JSON template lines in the markdown
+        if stripped.startswith("{") and "\"force_update\"" in stripped:
+            continue
+        if stripped.startswith("# "):
+            current_section = stripped[2:].strip().lower()
+            current_lang = None
+            continue
+        if stripped.startswith("## "):
+            current_lang = norm_lang(stripped[3:])
+            continue
+        if current_section == "force_update":
+            v = stripped.lower()
+            force_update = v in ("true", "1", "yes", "y")
+        elif current_section == "description" and current_lang in ("cn", "en"):
+            key = current_lang
+            description[key] = (description[key] + "\n" if description[key] else "") + raw
+        elif current_section == "content" and current_lang in ("cn", "en"):
+            key = current_lang
+            content[key] = (content[key] + "\n" if content[key] else "") + raw
+
+notes_obj = {
+    "force_update": force_update,
+    "description": description,
+    "content": content,
+}
+print(json.dumps(notes_obj, ensure_ascii=False))
+PY
+)
+          else
+            # Fallback: simple default JSON string
+            NOTES="{\"force_update\":false,\"description\":{\"cn\":\"\",\"en\":\"\"},\"content\":{\"cn\":\"\",\"en\":\"\"}}"
           fi
+
           echo "release_notes=$NOTES" >> "$GITHUB_OUTPUT"
 
           PRERELEASE="${{ github.event.inputs.prerelease }}"
@@ -153,7 +209,11 @@ jobs:
         if: matrix.release_json == true
         run: |
           mkdir -p src-tauri/releases
-          cp src-tauri/target/release/bundle/latest.json src-tauri/releases/latest.json
+          if [ -f src-tauri/target/release/bundle/latest.json ]; then
+            cp src-tauri/target/release/bundle/latest.json src-tauri/releases/latest.json
+          else
+            echo "latest.json not found, skipping copy"
+          fi
 
       - name: Upload latest.json artifact
         if: matrix.release_json == true
