@@ -62,7 +62,7 @@ jobs:
           # If release.md exists, build structured JSON string for `latest.json.notes`
           if [[ -f "release.md" ]]; then
             echo "Using release.md for release notes"
-            NOTES=$(python - << 'PY'
+            NOTES=$(python -c '
 import json
 
 force_update = False
@@ -112,8 +112,7 @@ notes_obj = {
     "content": content,
 }
 print(json.dumps(notes_obj, ensure_ascii=False))
-PY
-)
+')
           fi
 
           echo "release_notes=$NOTES" >> "$GITHUB_OUTPUT"
