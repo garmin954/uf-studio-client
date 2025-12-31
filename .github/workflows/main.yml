@@ -1,48 +1,169 @@
 name: Tauri Release
 
-# push 到 main 时自动构建并发布（包含 tag 和 updater 的 release.json）
 on:
   push:
-    branches:
-      - main
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version (e.g. 1.0.0)"
+        required: false
+      notes:
+        description: "Release notes"
+        required: false
+      prerelease:
+        description: "Publish as pre-release"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+env:
+  NODE_VERSION: "22"
+  PNPM_VERSION: "9"
 
 jobs:
-  build-and-release:
-    strategy:
-      matrix:
-        platform: [ubuntu-latest, windows-latest, macos-latest]
-
-    runs-on: ${{ matrix.platform }}
-
+  prepare-release:
+    name: Prepare GitHub release
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.meta.outputs.version }}
+      tag_name: ${{ steps.meta.outputs.tag_name }}
+      release_name: ${{ steps.meta.outputs.release_name }}
+      release_notes: ${{ steps.meta.outputs.release_notes }}
+      prerelease: ${{ steps.meta.outputs.prerelease }}
+      release_id: ${{ steps.create_release.outputs.release_id }}
     steps:
-      - name: Checkout code
+      - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Compute release metadata
+        id: meta
+        shell: bash
+        run: |
+          if [[ -n "${{ github.event.inputs.version }}" ]]; then
+            VERSION="${{ github.event.inputs.version }}"
+          elif [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          else
+            echo "Release version is required (tag push or workflow input)." >&2
+            exit 1
+          fi
+
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag_name=v$VERSION" >> "$GITHUB_OUTPUT"
+          echo "release_name=UFACTORY Studio v$VERSION" >> "$GITHUB_OUTPUT"
+
+          NOTES="${{ github.event.inputs.notes }}"
+          if [[ -z "$NOTES" ]]; then
+            NOTES="See the changelog for details."
+          fi
+          echo "release_notes=$NOTES" >> "$GITHUB_OUTPUT"
+
+          PRERELEASE="${{ github.event.inputs.prerelease }}"
+          if [[ -z "$PRERELEASE" ]]; then
+            PRERELEASE="false"
+          fi
+          echo "prerelease=$PRERELEASE" >> "$GITHUB_OUTPUT"
+
+      - name: Create or update release
+        id: create_release
+        uses: ncipollo/release-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ steps.meta.outputs.tag_name }}
+          name: ${{ steps.meta.outputs.release_name }}
+          body: ${{ steps.meta.outputs.release_notes }}
+          draft: false
+          prerelease: ${{ steps.meta.outputs.prerelease }}
+          allowUpdates: true
+
+  build:
+    name: Build ${{ matrix.label }} installers
+    needs: prepare-release
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            label: Linux
+            artifact: linux
+            release_json: true
+          - os: macos-latest
+            label: macOS
+            artifact: macos
+            release_json: false
+          - os: windows-latest
+            label: Windows
+            artifact: windows
+            release_json: false
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: false
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: "npm"
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
 
-      - name: Install pnpm globally
-        run: npm install -g pnpm
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
 
-      - name: Install frontend deps
-        run: pnpm install
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libgtk-3-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            patchelf
 
-      # 使用官方 tauri-action：
-      # 1. 依据 tauri.conf.json / package.json 里的 version 自动生成 tag（vX.Y.Z）
-      # 2. 创建 GitHub Release 并上传三平台安装包
-      # 3. 因为 tauri.conf.json 里启用了 createUpdaterArtifacts，会自动生成 updater 的 latest.json（即你要的 release.json 结构）
-      - name: Build & publish Tauri app
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Tauri bundle
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
         with:
-          tagName: v__VERSION__
-          releaseName: "UFACTORY-Studio v__VERSION__"
-          releaseBody: "自动构建的 Tauri 版本"
+          tauriScript: pnpm
+          args: tauri build
+          tagName: ${{ needs.prepare-release.outputs.tag_name }}
+          releaseName: ${{ needs.prepare-release.outputs.release_name }}
+          releaseBody: ${{ needs.prepare-release.outputs.release_notes }}
           releaseDraft: false
-          prerelease: false
+          prerelease: ${{ needs.prepare-release.outputs.prerelease }}
+          releaseId: ${{ needs.prepare-release.outputs.release_id }}
+          releaseJson: ${{ matrix.release_json }}
+
+      - name: Collect latest.json upgrade manifest
+        if: matrix.release_json == true
+        run: |
+          mkdir -p src-tauri/releases
+          cp src-tauri/target/release/bundle/latest.json src-tauri/releases/latest.json
+
+      - name: Upload latest.json artifact
+        if: matrix.release_json == true
+        uses: actions/upload-artifact@v4
+        with:
+          name: latest-json
+          path: src-tauri/releases/latest.json
+
+      - name: Upload bundle artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ufactory-studio-${{ matrix.artifact }}
+          path: src-tauri/target/release/bundle
