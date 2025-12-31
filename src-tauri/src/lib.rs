@@ -3,7 +3,6 @@ mod packages;
 mod state;
 mod utils;
 use tauri::{LogicalSize, Manager};
-mod desktops;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -47,12 +46,6 @@ pub fn run() {
                 packages::menu::i18n::tr("软件版本:", "Software version:"),
                 version
             );
-
-            #[cfg(desktop)]
-            {
-                // desktops::tray::setup_tray(handle)?;
-                // desktops::window::setup_desktop_window(handle)?;
-            }
 
             Ok(())
         })
