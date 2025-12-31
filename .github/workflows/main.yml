@@ -56,7 +56,10 @@ jobs:
           echo "tag_name=v$VERSION" >> "$GITHUB_OUTPUT"
           echo "release_name=UFACTORY Studio v$VERSION" >> "$GITHUB_OUTPUT"
 
-          # Build structured JSON string for `latest.json.notes` based on release.md
+          # Default structured JSON string for `latest.json.notes`
+          NOTES="{\"force_update\":false,\"description\":{\"cn\":\"\",\"en\":\"\"},\"content\":{\"cn\":\"\",\"en\":\"\"}}"
+
+          # If release.md exists, build structured JSON string for `latest.json.notes`
           if [[ -f "release.md" ]]; then
             echo "Using release.md for release notes"
             NOTES=$(python - << 'PY'
@@ -111,9 +114,6 @@ notes_obj = {
 print(json.dumps(notes_obj, ensure_ascii=False))
 PY
 )
-          else
-            # Fallback: simple default JSON string
-            NOTES="{\"force_update\":false,\"description\":{\"cn\":\"\",\"en\":\"\"},\"content\":{\"cn\":\"\",\"en\":\"\"}}"
           fi
 
           echo "release_notes=$NOTES" >> "$GITHUB_OUTPUT"
