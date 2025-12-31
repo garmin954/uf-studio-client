@@ -59,7 +59,7 @@
         "installMode": "passive"
       },
       "dialog": true,
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDYwMjQ4Qjc5MDRDNzgxRDEKUldUUmdjY0VlWXNrWUFyQzR3b3BsQWtTOEQxMXZuUUFDQk53MmNzckpFVm1wajdwUnNyNEtZWmEK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDk2MkM5MkM5QTZCMUIzNzcKUldSM3M3R215WklzbGdYYS9SOGlkN1lmckgxY2I1K1dSMGZvcFE0TVh4VnRVeEIrRUJuamFkWWkK",
       "endpoints": [
         "http://192.168.1.19/releases/xarm/xarm_tool/releases.json"
       ],
