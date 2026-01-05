@@ -13,14 +13,16 @@ use tauri_plugin_log::{
 /// 在这里可以拿到 `app`，用来计算日志目录等。
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
     PluginBuilder::new("app_log")
-        .setup(|app, _api| {
+        .setup(|app: &tauri::AppHandle<R>, _api| {
             let log_file_name = Local::now().format("%Y_%m_%d").to_string();
-            // 基于应用资源目录的日志目录：{resource_dir}/log/rs
+            // 使用无需管理员权限的应用日志目录：{app_log_dir}/rs
             let log_folder = app
                 .path()
-                .resource_dir()
+                .app_log_dir()
                 .unwrap_or_else(|_| PathBuf::from("."))
-                .join("log/rs");
+                .join("rs");
+
+            println!("log_folder: {:?}", log_folder);
 
             let app_handle = app.app_handle();
 

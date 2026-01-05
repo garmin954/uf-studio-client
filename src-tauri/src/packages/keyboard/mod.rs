@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, path::PathBuf};
 
 use tauri::{
     plugin::{Builder as PluginBuilder, TauriPlugin},
@@ -95,6 +95,21 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                         }),
                     );
 
+                    // 打开日志目录
+                    handler_map.insert(
+                        Shortcut::new(Some(Modifiers::CONTROL | Modifiers::ALT), Code::KeyL),
+                        Box::new(|_app, shortcut| {
+                            println!("快捷键 {:?} 被按下！", shortcut);
+                            // 打开日志目录
+                            let app_handle = _app.app_handle();
+                            let log_folder = app_handle
+                                .path()
+                                .app_log_dir()
+                                .unwrap_or_else(|_| PathBuf::from("."));
+                            let _ = opener::open(log_folder);
+                        }),
+                    );
+
                     let shortcuts = handler_map.keys().cloned().collect::<Vec<Shortcut>>();
 
                     if let Err(e) =
@@ -107,7 +122,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                             handler(app, shortcut);
                         })
                     {
-                        eprintln!("快捷键监听注册失败: {}", e);
+                        log::error!("快捷键监听注册失败: {}", e);
                     } else {
                         println!("快捷键监听注册成功");
                     }

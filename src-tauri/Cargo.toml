@@ -1,6 +1,6 @@
 [package]
 name = "UFACTORY-Studio"
-version = "1.0.5"
+version = "1.0.6"
 description = "UFACTORY-Studio"
 authors = ["Garmin"]
 edition = "2021"
@@ -24,6 +24,7 @@ reqwest = "0.12.10"
 chrono = "0.4"
 tauri-plugin-store = "2"
 tauri-plugin-dialog = "2"
+opener = "0.8.3"
 # URL 解析
 
 
