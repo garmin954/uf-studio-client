@@ -869,7 +869,7 @@ packages:
   '@types/debug@4.1.12':
     resolution: {integrity: sha512-vIChWdVG3LG1SMxEvI/AK+FWJthlrqlTu7fbrlywTkkaONwk/UAGaULXRlf8vkzFBLVm0zkMdCquhL5aOjhXPQ==}
 
-  '@types/estree-jsx@1.0.6':
+  '@types/estree-jsx@1.1.4':
     resolution: {integrity: sha512-52CcUVNFyfb1A2ALocQw/Dd1BQFNmSdkuC3BkZ6iqhdMfQz7JWOFRuJFloOzjk+6WijU56m9oKXFAXc7o3Towg==}
 
   '@types/estree@1.0.8':
@@ -2106,7 +2106,7 @@ packages:
     resolution: {integrity: sha512-ZX99e6tRweoUXqR+VBrslhda51Nh5MTQwou5tnUDgbtyM0dBgmhEDtWGP/xbKn6hqfPRHujUNwz5fy/wbbhnpw==}
     engines: {node: '>= 0.4'}
 
-  sisteransi@1.0.6:
+  sisteransi@1.1.4:
     resolution: {integrity: sha512-bLGGlR1QxBcynn2d5YmDX4MGjlZvy2MRBDRNHLJ8VI6l6+9FUiyTFNJ0IveOSP0bcXgVDPRcfGqA0pjaqUpfVg==}
 
   sonner@2.0.7:
@@ -2243,7 +2243,7 @@ packages:
     resolution: {integrity: sha512-nWJ91DjeOkej/TA8pXQ3myruKpKEYgqvpw9lz4OPHj/NWFNluYrjbz9j01CJ8yKQd2g4jFoOkINCTW2I5LEEyw==}
     engines: {node: '>= 0.4'}
 
-  unified@11.0.6:
+  unified@11.1.4:
     resolution: {integrity: sha512-xKvGhPWw3k84Qjh8bI3ZeJjqnyadK+GEFtazSfZv/rKeTkTjOJho6mFqh2SM96iIcZokxiOpg78GazTSg8+KHA==}
 
   unist-util-is@6.0.1:
@@ -2940,7 +2940,7 @@ snapshots:
     dependencies:
       '@types/ms': 2.1.0
 
-  '@types/estree-jsx@1.0.6':
+  '@types/estree-jsx@1.1.4':
     dependencies:
       '@types/estree': 1.0.8
 
@@ -3767,7 +3767,7 @@ snapshots:
 
   mdast-util-mdx-expression@2.0.1:
     dependencies:
-      '@types/estree-jsx': 1.0.6
+      '@types/estree-jsx': 1.1.4
       '@types/hast': 3.0.4
       '@types/mdast': 4.0.4
       devlop: 1.1.0
@@ -3778,7 +3778,7 @@ snapshots:
 
   mdast-util-mdx-jsx@3.2.0:
     dependencies:
-      '@types/estree-jsx': 1.0.6
+      '@types/estree-jsx': 1.1.4
       '@types/hast': 3.0.4
       '@types/mdast': 4.0.4
       '@types/unist': 3.0.3
@@ -3795,7 +3795,7 @@ snapshots:
 
   mdast-util-mdxjs-esm@2.0.1:
     dependencies:
-      '@types/estree-jsx': 1.0.6
+      '@types/estree-jsx': 1.1.4
       '@types/hast': 3.0.4
       '@types/mdast': 4.0.4
       devlop: 1.1.0
@@ -4139,7 +4139,7 @@ snapshots:
   prompts@2.4.2:
     dependencies:
       kleur: 3.0.3
-      sisteransi: 1.0.6
+      sisteransi: 1.1.4
 
   property-information@7.1.0: {}
 
@@ -4196,7 +4196,7 @@ snapshots:
       react: 18.3.1
       remark-parse: 11.0.0
       remark-rehype: 11.1.2
-      unified: 11.0.6
+      unified: 11.1.4
       unist-util-visit: 5.0.0
       vfile: 6.0.3
     transitivePeerDependencies:
@@ -4314,7 +4314,7 @@ snapshots:
       '@types/mdast': 4.0.4
       mdast-util-from-markdown: 2.0.2
       micromark-util-types: 2.0.2
-      unified: 11.0.6
+      unified: 11.1.4
     transitivePeerDependencies:
       - supports-color
 
@@ -4323,7 +4323,7 @@ snapshots:
       '@types/hast': 3.0.4
       '@types/mdast': 4.0.4
       mdast-util-to-hast: 13.2.1
-      unified: 11.0.6
+      unified: 11.1.4
       vfile: 6.0.3
 
   reselect@5.1.1: {}
@@ -4449,7 +4449,7 @@ snapshots:
       side-channel-map: 1.0.1
       side-channel-weakmap: 1.0.2
 
-  sisteransi@1.0.6: {}
+  sisteransi@1.1.4: {}
 
   sonner@2.0.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
@@ -4637,7 +4637,7 @@ snapshots:
       has-symbols: 1.1.0
       which-boxed-primitive: 1.1.1
 
-  unified@11.0.6:
+  unified@11.1.4:
     dependencies:
       '@types/unist': 3.0.3
       bail: 2.0.2
