@@ -1,14 +1,22 @@
 use std::path::PathBuf;
 
 use chrono::Local;
+use log::Level;
+use serde::Serialize;
 use tauri::{
     plugin::{Builder as PluginBuilder, TauriPlugin},
-    Manager, Runtime,
+    Emitter, Manager, Runtime,
 };
 use tauri_plugin_log::{
     attach_logger, Builder as LogBuilder, Target, TargetKind, TimezoneStrategy,
 };
 
+#[derive(Serialize, Clone)]
+struct AppLogError {
+    level: String,
+    target: String,
+    message: String,
+}
 /// app_log 是对 `tauri_plugin_log` 的封装。
 /// 在这里可以拿到 `app`，用来计算日志目录等。
 pub fn init<R: Runtime>() -> TauriPlugin<R> {
@@ -25,15 +33,28 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
             println!("log_folder: {:?}", log_folder);
 
             let app_handle = app.app_handle();
+            let app_handle_clone = app_handle.clone();
 
             // 用 tauri_plugin_log 构建真正的 logger，并挂到全局 log 上
             let (_log_plugin, max_level, logger) = LogBuilder::new()
                 .timezone_strategy(TimezoneStrategy::UseLocal)
-                .format(|out, message, record| {
+                .format(move |out, message, record| {
                     let now = Local::now();
                     let date = now.format("%Y-%m-%d");
                     let time = now.format("%H:%M:%S");
                     let target = record.target();
+
+                    // 如果是error级别，则输出红色
+                    if record.level() == Level::Error {
+                        let _ = app_handle_clone.emit(
+                            "app_log_error",
+                            AppLogError {
+                                level: "error".to_string(),
+                                target: target.to_string(),
+                                message: message.to_string(),
+                            },
+                        );
+                    }
 
                     if target.starts_with("tool_service_stdout") {
                         out.finish(format_args!("[{}][{}][🥑python] {}", date, time, message));

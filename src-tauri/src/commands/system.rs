@@ -100,7 +100,7 @@ pub fn start_udp_broadcast<R: Runtime>(app: AppHandle<R>, window: Window<R>) -> 
                     if stop_flag.load(Ordering::SeqCst) {
                         break; // 正常退出
                     }
-                    error!("Error receiving data: {}", e);
+                    // error!("Error receiving data: {}", e);
                     break;
                 }
             }

@@ -10,12 +10,23 @@ import { Provider } from "react-redux";
 import { store } from "./store";
 import { ThemeProvider } from "./pages/components/theme/ThemeProvider";
 import { Toaster } from "./components/ui/sonner";
-
+// import { toast } from "sonner";
+// type AppLogError = {
+//   level: string;
+//   target: string;
+//   message: string;
+// }
 function App() {
   useEffect(() => {
     WebviewWindow.getByLabel("main").then(async (win) => {
       win?.show();
       win?.setFocus();
+      // win?.listen("app_log_error", (event) => {
+      //   console.error(event.payload);
+      //   toast.error((event.payload as AppLogError).message, {
+      //     position: "top-right",
+      //   });
+      // });
     });
     return () => {
     };

@@ -47,7 +47,7 @@ export default function ReleaseDescDialog(props: Props) {
         </DialogHeader>
         <div className="bg-gray-100 p-4 rounded-lg">
           <div
-            className="py-6 h-[60vh] overflow-y-auto text-xl markdown-body !bg-transparent star-markdown star-markdown-dark "
+            className="h-[60vh] overflow-y-auto text-xl markdown-body !bg-transparent star-markdown star-markdown-dark "
           >
             <ReactMarkdown >{props.content}</ReactMarkdown>
           </div>
