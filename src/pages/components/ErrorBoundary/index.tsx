@@ -90,7 +90,9 @@ export function ErrorBoundaryWrapper({
 }) {
   return (
     <ErrorBoundary
+      //@ts-ignore
       FallbackComponent={ErrorFallback}
+      //@ts-ignore
       onError={(e, ei) => onError(e, ei)}
       // 可选: 设置重置条件
       resetKeys={[]}
