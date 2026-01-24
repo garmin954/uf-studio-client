@@ -196,6 +196,11 @@ fn update_menu_language<R: tauri::Runtime>(menu: &Menu<R>) -> tauri::Result<()> 
                 if let MenuItemKind::MenuItem(mi) = child_kind {
                     let item_label =
                         i18n::tr(item_cfg.label.zh_cn.as_str(), item_cfg.label.en_us.as_str());
+                    let item_label = if item_cfg.id == "tool_check_updates" {
+                        format!("{} (v{})", item_label, env!("CARGO_PKG_VERSION"))
+                    } else {
+                        item_label.to_string()
+                    };
                     mi.set_text(item_label)?;
                 }
             }

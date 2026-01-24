@@ -123,6 +123,11 @@ pub fn build_menu_item<R: Runtime>(
     // 加速键从 String 转成 &str 传给 Tauri
     let accelerator = config.accelerator.as_deref();
 
+    let label = if config.id == "tool_check_updates" {
+        format!("{} (v{})", label, env!("CARGO_PKG_VERSION"))
+    } else {
+        label
+    };
     Ok(MenuItem::with_id(
         handle,
         config.id,

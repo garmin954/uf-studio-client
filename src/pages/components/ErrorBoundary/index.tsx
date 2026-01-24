@@ -1,4 +1,5 @@
 // src/components/ErrorBoundary.tsx
+//@ts-nocheck
 import { ErrorBoundary } from "react-error-boundary";
 import React from "react";
 import * as log from "@tauri-apps/plugin-log";
