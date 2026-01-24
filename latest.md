@@ -7,9 +7,12 @@ false
 This version fixes important vulnerabilities, please update immediately!
 # content
 ## zhCn
-feat: 新增快捷键打开日志目录
-- 新增快捷键 Ctrl+Alt+L 打开日志目录
+fix: 修复UDP广播逻辑并修改快捷键
+- 确保UDP广播只在未运行时启动
+- 将快捷键从Ctrl+Alt改为Ctrl以符合标准操作
+
 
 ## enUs
-feat: add shortcut to open log directory
-- add shortcut Ctrl+Alt+L to open log directory
+fix: update UDP broadcast logic and modify keyboard shortcuts
+- Ensure UDP broadcast starts only if not already running
+- Change keyboard shortcuts from Ctrl+Alt to Ctrl for standard actions

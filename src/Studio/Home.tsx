@@ -188,12 +188,13 @@ export default function StudioHome() {
         console.log("search");
         setShowIpList(true);
         setArmIps([]);
+        invoke("start_udp_broadcast").then(() => { });
         // invoke("start_udp_broadcast").then(() => { });
     }
 
     useEffect(() => {
         if (showIpList) {
-            invoke("start_udp_broadcast").then(() => { });
+            // invoke("start_udp_broadcast").then(() => { });
         } else {
             invoke("stop_udp_broadcast").then(() => { });
         }

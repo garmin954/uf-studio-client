@@ -30,7 +30,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
 
                     // 标准尺寸
                     handler_map.insert(
-                        Shortcut::new(Some(Modifiers::CONTROL | Modifiers::ALT), Code::KeyR),
+                        Shortcut::new(Some(Modifiers::CONTROL), Code::KeyR),
                         Box::new(|_app, shortcut| {
                             println!("快捷键 {:?} 被按下！", shortcut);
                             // 标准尺寸
@@ -40,7 +40,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                     );
                     // 最小化
                     handler_map.insert(
-                        Shortcut::new(Some(Modifiers::CONTROL | Modifiers::ALT), Code::KeyM),
+                        Shortcut::new(Some(Modifiers::CONTROL), Code::KeyM),
                         Box::new(|_app, shortcut| {
                             println!("快捷键 {:?} 被按下！", shortcut);
                             // 最小化
@@ -64,7 +64,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                     );
                     // 搜索
                     handler_map.insert(
-                        Shortcut::new(Some(Modifiers::CONTROL | Modifiers::ALT), Code::KeyF),
+                        Shortcut::new(Some(Modifiers::CONTROL), Code::KeyF),
                         Box::new(|_app, shortcut| {
                             println!("快捷键 {:?} 被按下！", shortcut);
                             // 去搜索页面，/app/home
@@ -76,7 +76,7 @@ pub fn init<R: Runtime>() -> TauriPlugin<R> {
                     );
                     // 刷新页面
                     handler_map.insert(
-                        Shortcut::new(Some(Modifiers::CONTROL | Modifiers::ALT), Code::F5),
+                        Shortcut::new(Some(Modifiers::CONTROL), Code::F5),
                         Box::new(|_app, shortcut| {
                             println!("快捷键 {:?} 被按下！", shortcut);
                             // 刷新页面

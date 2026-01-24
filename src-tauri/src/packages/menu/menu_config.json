@@ -14,7 +14,7 @@
                         "enUs": "Standard Size"
                     },
                     "enabled": true,
-                    "accelerator": "Ctrl+Alt+R"
+                    "accelerator": "Ctrl+R"
                 },
                 {
                     "id": "window_min_size",
@@ -32,7 +32,7 @@
                         "enUs": "Minimize"
                     },
                     "enabled": true,
-                    "accelerator": "Ctrl+Alt+M"
+                    "accelerator": "Ctrl+M"
                 },
                 {
                     "id": "window_fullscreen",
@@ -95,7 +95,7 @@
                         "enUs": "Search"
                     },
                     "enabled": true,
-                    "accelerator": "Ctrl+Alt+F"
+                    "accelerator": "Ctrl+F"
                 },
                 {
                     "id": "tool_refresh_page",
@@ -104,7 +104,7 @@
                         "enUs": "Refresh Page"
                     },
                     "enabled": true,
-                    "accelerator": "Ctrl+Alt+F5"
+                    "accelerator": "Ctrl+F5"
                 },
                 {
                     "id": "tool_open_devtools",

@@ -1,6 +1,6 @@
 [package]
 name = "UFACTORY-Studio"
-version = "1.1.4"
+version = "1.0.7"
 description = "UFACTORY-Studio"
 authors = ["Garmin"]
 edition = "2021"

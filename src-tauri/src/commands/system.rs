@@ -37,19 +37,20 @@ pub fn start_udp_broadcast<R: Runtime>(app: AppHandle<R>, window: Window<R>) -> 
     let mut udp_state = state.udp_state.lock().map_err(|e| e.to_string())?;
 
     // 如果已经开启，直接返回
-    if udp_state.socket.is_some() {
-        return Err("UDP broadcast is already running".to_string());
-    }
+    if udp_state.socket.is_none() {
+        // 绑定到本地地址和端口
+        let new_socket = UdpSocket::bind("0.0.0.0:0").map_err(|e| e.to_string())?;
+        new_socket.set_broadcast(true).map_err(|e| e.to_string())?;
+        // 更新状态
+        udp_state.socket = Some(Arc::new(new_socket));
+    };
 
-    // 绑定到本地地址和端口
-    let socket = UdpSocket::bind("0.0.0.0:0").map_err(|e| e.to_string())?;
-    socket.set_broadcast(true).map_err(|e| e.to_string())?;
+    let socket = Arc::clone(&udp_state.socket.as_ref().unwrap());
 
     // 设置 socket 为非阻塞模式，设置超时时间
     socket
         .set_read_timeout(Some(Duration::from_millis(500)))
         .map_err(|e| e.to_string())?;
-
     // 克隆 socket 用于线程
     let socket = Arc::new(socket);
     let socket_clone = Arc::clone(&socket);
@@ -107,8 +108,6 @@ pub fn start_udp_broadcast<R: Runtime>(app: AppHandle<R>, window: Window<R>) -> 
         }
     });
 
-    // 更新状态
-    udp_state.socket = Some(socket);
     udp_state.handle = Some(handle);
 
     info!("UDP broadcast started");
