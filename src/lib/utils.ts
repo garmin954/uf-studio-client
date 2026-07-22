@@ -241,36 +241,43 @@ export function checkSn(sn: string) {
 }
 
 
+import { invoke } from "@tauri-apps/api/core";
+
+export interface FetchResponse {
+  status: number;
+  headers: Record<string, string>;
+  data: string;
+}
+
 /**
- * 带超时且可中断的 fetch 请求
+ * 带超时且可中断的 fetch 请求（通过 Rust 后端发送，无 CORS 限制）
  * @param {string} url - 请求地址
- * @param {RequestInit} options - fetch 配置
+ * @param {object} options - fetch 配置
  * @param {number} timeout - 超时时间（毫秒）
- * @returns {Promise<Response>}
+ * @returns {{ promise: Promise<{status: number, headers: Record<string, string>, data: string, ok: boolean}>, abort: () => void }}
  */
-export function fetchWithAbortTimeout(url: string, options: RequestInit = {}, timeout = 5000) {
-  const controller = new AbortController();
-  const fetchOptions = { ...options, signal: controller.signal };
-  const fetchPromise = fetch(url, fetchOptions);
-  let timer: any;
-
-  const timeoutPromise = new Promise((_, reject) => {
-    timer = setTimeout(() => {
-      controller.abort();
-      reject(new Error(`超时(${timeout}ms)，已中断`));
-    }, timeout);
-  });
-
-  // 清理定时器
-  const racePromise = Promise.race([fetchPromise, timeoutPromise]);
-  racePromise.finally(() => clearTimeout(timer));
-
-  // 暴露手动中止方法（可选）
-  return {
-    promise: racePromise,
-    abort: () => {
-      controller.abort();
-      clearTimeout(timer);
+export function fetchWithAbortTimeout(
+  url: string,
+  options: any = {},
+  timeout = 5000
+): { promise: Promise<any>; abort: () => void } {
+  const promise = invoke<FetchResponse>("fetch_with_timeout", {
+    request: {
+      url,
+      method: options.method || "GET",
+      headers: options.headers || null,
+      body: options.body || null,
+      timeout,
     },
+  }).then((res) => ({
+    status: res.status,
+    headers: res.headers,
+    data: res.data,
+    ok: res.status >= 200 && res.status < 300,
+  }));
+
+  return {
+    promise,
+    abort: () => {},
   };
 }

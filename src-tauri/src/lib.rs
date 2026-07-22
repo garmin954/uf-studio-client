@@ -17,6 +17,7 @@ pub fn run() {
             commands::system::stop_udp_broadcast,
             commands::system::ping,
             commands::request::fetch_history_releases,
+            commands::http::fetch_with_timeout,
             commands::tools::set_beta_updater,
             commands::tools::set_stable_updater,
             commands::system::open_devtools,
