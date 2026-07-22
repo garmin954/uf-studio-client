@@ -2,17 +2,19 @@
 false
 # description
 ## zhCn
-这版修复重要漏洞，请立即更新！
+新增 Rust 后端 HTTP 请求，绕过前端 CORS 限制！
 ## enUs
-This version fixes important vulnerabilities, please update immediately!
+New Rust backend HTTP fetch to bypass CORS restrictions!
 # content
 ## zhCn
-fix: 修复UDP广播逻辑并修改快捷键
-- 确保UDP广播只在未运行时启动
-- 将快捷键从Ctrl+Alt改为Ctrl以符合标准操作
+feat: 后端HTTP请求绕过CORS限制，新增fetch_with_timeout命令
+- 新增 Rust 后端命令 fetch_with_timeout，支持 GET/POST/PUT/DELETE
+- 前端 fetchWithAbortTimeout 改为通过 invoke 调用后端，绕过 CORS
+- 修复 reqwest json feature 缺失导致的编译错误
 
 
 ## enUs
-fix: update UDP broadcast logic and modify keyboard shortcuts
-- Ensure UDP broadcast starts only if not already running
-- Change keyboard shortcuts from Ctrl+Alt to Ctrl for standard actions
+feat: Backend HTTP requests bypass CORS, added fetch_with_timeout command
+- New Rust backend command fetch_with_timeout, supports GET/POST/PUT/DELETE
+- Frontend fetchWithAbortTimeout now calls backend via invoke, bypassing CORS
+- Fix reqwest json feature missing compilation error
