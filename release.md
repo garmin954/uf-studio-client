@@ -1,11 +1,12 @@
-### ✨✨✨更新版本到v1.0.9
+### ✨✨✨更新版本到v1.0.10
 
 ## zhCn
-fix: 修复UDP广播逻辑并修改快捷键
-- 确保UDP广播只在未运行时启动
-- 将快捷键从Ctrl+Alt改为Ctrl以符合标准操作
+feat: iframe 内下载唤起系统保存对话框
+- 新增 webview on_download 下载回调，iframe 中点击下载时弹出系统"另存为"对话框，用户可自选目录保存文件
+- 主窗口改为代码创建以挂载下载回调，窗口配置与原声明保持一致
+
 
 ## enUs
-fix: update UDP broadcast logic and modify keyboard shortcuts
-- Ensure UDP broadcast starts only if not already running
-- Change keyboard shortcuts from Ctrl+Alt to Ctrl for standard actions
+feat: trigger system save dialog for downloads inside iframe
+- Add webview on_download callback: clicking a download in the iframe opens the native "Save As" dialog so users can choose where to save the file
+- Create the main window in code to attach the download callback, keeping the original window configuration unchanged

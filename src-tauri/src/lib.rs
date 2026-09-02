@@ -2,7 +2,7 @@ mod commands;
 mod packages;
 mod state;
 mod utils;
-use tauri::{LogicalSize, Manager};
+use tauri::{WebviewUrl, WebviewWindowBuilder};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -33,11 +33,18 @@ pub fn run() {
         .plugin(packages::menu::init())
         .plugin(tauri_plugin_dialog::init())
         .setup(move |app| {
-            // let handle = app.handle();
-            let window = app.get_webview_window("main").unwrap();
-            // 设置标准尺寸
-            window.set_size(LogicalSize::new(1280.0, 768.0)).unwrap();
-            // window.reload().unwrap();
+            // 主窗口改为代码创建，以便挂载 on_download 下载回调
+            // （配置项与 tauri.conf.json 中原 windows 声明保持一致）
+            let _window = WebviewWindowBuilder::new(app, "main", WebviewUrl::App("/app/home".into()))
+                .title("UFACTORY Studio")
+                .inner_size(1280.0, 768.0)
+                .min_inner_size(1080.0, 648.0)
+                .visible(false)
+                .additional_browser_args(
+                    "--enable-energy-saver --enable-gpu --ignore-gpu-blacklist",
+                )
+                .on_download(packages::download::on_download)
+                .build()?;
 
             // 获取version版本
             let version = env!("CARGO_PKG_VERSION");
