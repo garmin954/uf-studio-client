@@ -19,9 +19,19 @@ fn filename_from_url(url: &tauri::Url) -> Option<String> {
 pub fn on_download<R: tauri::Runtime>(webview: Webview<R>, event: DownloadEvent<'_>) -> bool {
     match event {
         DownloadEvent::Requested { url, destination } => {
-            let file_name = filename_from_url(&url).unwrap_or_else(|| {
-                format!("download_{}", chrono::Local::now().format("%Y%m%d%H%M%S"))
-            });
+            // 文件名优先级：
+            // 1. destination 内核建议名（WebView2/WKWebView/WebKitGTK 会带上
+            //    a[download] 属性或 Content-Disposition 的文件名，blob 下载也准确）
+            // 2. 从 URL 路径推断
+            // 3. 时间戳兜底
+            let file_name = destination
+                .file_name()
+                .map(|n| n.to_string_lossy().into_owned())
+                .filter(|n| !n.is_empty())
+                .or_else(|| filename_from_url(&url))
+                .unwrap_or_else(|| {
+                    format!("download_{}", chrono::Local::now().format("%Y%m%d%H%M%S"))
+                });
             log::info!("download requested: {} ({})", url, file_name);
 
             match webview
@@ -42,11 +52,7 @@ pub fn on_download<R: tauri::Runtime>(webview: Webview<R>, event: DownloadEvent<
                 }
             }
         }
-        DownloadEvent::Finished {
-            url,
-            path,
-            success,
-        } => {
+        DownloadEvent::Finished { url, path, success } => {
             log::info!(
                 "download finished: {} success={} path={:?}",
                 url,
