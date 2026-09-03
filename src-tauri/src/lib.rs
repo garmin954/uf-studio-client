@@ -43,7 +43,7 @@ pub fn run() {
                 .additional_browser_args(
                     "--enable-energy-saver --enable-gpu --ignore-gpu-blacklist",
                 )
-                .on_download(packages::download::on_download)
+                .on_download(packages::download::handler())
                 .build()?;
 
             // 获取version版本
