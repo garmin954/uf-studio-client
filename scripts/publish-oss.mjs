@@ -44,13 +44,22 @@ function requireEnv(name) {
   return value;
 }
 
-/** 从 oss-cn-shenzhen.aliyuncs.com 推导 region；自定义域名时回退到 OSS_REGION */
+/**
+ * 从 endpoint 推导 region。支持：
+ *   oss-cn-shenzhen.aliyuncs.com
+ *   oss-cn-shenzhen-internal.aliyuncs.com
+ *   https://oss-cn-shenzhen.aliyuncs.com
+ *   oss-cn-shenzhen.aliyuncs.com/whatever
+ * 自定义域名（CNAME 到 OSS）无法推导，需要显式设置 OSS_REGION。
+ */
 function resolveRegion(endpoint) {
   if (process.env.OSS_REGION) return process.env.OSS_REGION;
-  const match = /^oss-([a-z0-9-]+?)(?:-internal)?\.aliyuncs\.com$/.exec(endpoint);
+  const match = /(?:^|\.)oss-([a-z0-9-]+?)(?:-internal)?\.aliyuncs\.com/i.exec(endpoint);
   if (!match) {
     throw new Error(
-      `无法从 OSS_ENDPOINT=${endpoint} 推导 region，请额外设置 OSS_REGION`,
+      `无法从 OSS_ENDPOINT=${endpoint} 推导 region。` +
+        "请在仓库 Variables 里设置 OSS_REGION（例如 oss-cn-shenzhen），" +
+        "或把 OSS_ENDPOINT 设为 oss-<region>.aliyuncs.com 形式。",
     );
   }
   return `oss-${match[1]}`;
@@ -75,7 +84,11 @@ async function main() {
   const require = createRequire(path.resolve(toolDir, "index.js"));
   const OSS = require("ali-oss");
 
-  const endpoint = requireEnv("OSS_ENDPOINT").replace(/^https?:\/\//, "");
+  // Secret 里粘贴的值常带尾随空白或末尾斜杠，先清理再做 region 推导
+  const endpoint = requireEnv("OSS_ENDPOINT")
+    .trim()
+    .replace(/^https?:\/\//i, "")
+    .replace(/\/+$/, "");
   const bucket = requireEnv("OSS_BUCKET");
   const prefix = (process.env.OSS_PREFIX ?? "releases/studio_client").replace(
     /^\/+|\/+$/g,

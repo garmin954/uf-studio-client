@@ -79,6 +79,8 @@ jobs:
       OSS_ENDPOINT: ${{ secrets.OSS_ENDPOINT }}
       OSS_BUCKET: ${{ secrets.OSS_BUCKET }}
       OSS_ACL: ${{ vars.OSS_ACL }}
+      # 自定义域名做 endpoint 时无法推导 region，可在 Variables 里显式指定
+      OSS_REGION: ${{ vars.OSS_REGION }}
       # OSS 对象前缀（与客户端更新地址中的路径一致）
       OSS_PREFIX: ${{ vars.OSS_PREFIX || 'releases/studio_client' }}
       # 对外访问域名
