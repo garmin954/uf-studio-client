@@ -1,15 +1,18 @@
 name: Publish to Aliyun OSS
 
-# 可复用工作流：由 main.yml 的 publish-oss job 通过
-#   uses: ./.github/workflows/publish-oss.yml
-# 调用，不单独触发。
+# 两种用法：
+# 1) 被 main.yml 的 publish-oss job 通过
+#      uses: ./.github/workflows/publish-oss.yml
+#    调用：使用该次构建上传的 artifacts（正常发布路径）。
+# 2) 手动触发（workflow_dispatch）：从「已经发布好的 GitHub Release」下载资产再补传 OSS。
+#    用于构建成功但 OSS 上传失败/被跳过的场景，不需要重新打包。
 #
 # 职责：
-# 1) 汇总 build job 上传的各平台安装包与 updater 清单片段；
+# 1) 汇总各平台安装包与 updater 清单；
 # 2) 合并生成包含全部平台的 latest.json；
 # 3) 上传安装包 + latest.json 到阿里云 OSS。
 #
-# 需要的 Secrets（在主仓库 Settings > Secrets and variables > Actions 配置）：
+# 需要的 Secrets（Settings > Secrets and variables > Actions）：
 #   OSS_ACCESS_KEY_ID / OSS_ACCESS_KEY_SECRET
 #   OSS_ENDPOINT（如 oss-cn-shenzhen.aliyuncs.com，不带 https://）/ OSS_BUCKET
 # 可选仓库变量：
@@ -43,9 +46,24 @@ on:
       OSS_BUCKET:
         required: false
 
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "已发布 Release 的版本号（不带 v），例如 1.0.13"
+        required: true
+        type: string
+      prerelease:
+        description: "是否预发布（只写 latest-pre.json）"
+        required: false
+        type: string
+        default: "false"
+
+permissions:
+  contents: read
+
 # 同一版本串行发布，避免并发 run 互相覆盖 latest.json
 concurrency:
-  group: oss-publish-${{ github.ref }}
+  group: oss-publish-${{ inputs.version }}
   cancel-in-progress: false
 
 env:
@@ -65,7 +83,6 @@ jobs:
       OSS_PREFIX: ${{ vars.OSS_PREFIX || 'releases/studio_client' }}
       # 对外访问域名
       OSS_PUBLIC_BASE_URL: ${{ vars.OSS_PUBLIC_BASE_URL || 'https://oss.ufactory.cc' }}
-      LATEST_NOTES: ${{ inputs.latest_notes }}
       VERSION: ${{ inputs.version }}
       IS_PRERELEASE: ${{ inputs.prerelease }}
     steps:
@@ -89,7 +106,9 @@ jobs:
             exit 1
           fi
 
+      # ---------- 正常发布路径：用本次构建的 artifacts ----------
       - name: Download bundle artifacts
+        if: github.event_name == 'workflow_call'
         uses: actions/download-artifact@v4
         with:
           pattern: ufactory-studio-*
@@ -97,11 +116,62 @@ jobs:
           merge-multiple: true
 
       - name: Download updater manifests
+        if: github.event_name == 'workflow_call'
         uses: actions/download-artifact@v4
         with:
           pattern: updater-manifest-*
           path: updater-manifests
           merge-multiple: true
+
+      # ---------- 手动补传路径：从已发布的 Release 取资产 ----------
+      - name: Download release assets
+        if: github.event_name == 'workflow_dispatch'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh release download "v${VERSION}" \
+            --repo "${GITHUB_REPOSITORY}" \
+            --dir downloads
+          echo "--- downloaded assets ---"
+          ls -l downloads
+
+      # 从 Release 资产重建各平台的 updater 清单片段。
+      # collect 会按平台后缀族挑选（windows: -setup.exe/msi，linux: .AppImage[.tar.gz]，
+      # darwin: .app.tar.gz），因此同一个扁平目录可以逐个平台解析。
+      - name: Rebuild updater manifests
+        if: github.event_name == 'workflow_dispatch'
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p updater-manifests
+          node scripts/latest-json.mjs collect \
+            --bundle downloads --platform windows-x86_64 --out updater-manifests/updater-manifest-windows.json
+          node scripts/latest-json.mjs collect \
+            --bundle downloads --platform linux-x86_64 --out updater-manifests/updater-manifest-linux.json
+          node scripts/latest-json.mjs collect \
+            --bundle downloads --platform darwin-aarch64 --out updater-manifests/updater-manifest-macos.json
+
+      - name: Resolve latest notes
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -n "${LATEST_NOTES:-}" ]]; then
+            echo "使用调用方传入的 notes"
+            exit 0
+          fi
+          # 手动补传时复用 Release 里已有的 latest.json 的 notes，保证与已发布内容一致
+          if [[ ! -f downloads/latest.json ]]; then
+            echo "::error::downloads/latest.json 不存在，无法取得更新说明"
+            exit 1
+          fi
+          NOTES="$(node -e "process.stdout.write(JSON.stringify(JSON.parse(require('fs').readFileSync('downloads/latest.json','utf8')).notes))")"
+          {
+            echo "LATEST_NOTES<<__NOTES_EOF__"
+            echo "$NOTES"
+            echo "__NOTES_EOF__"
+          } >> "$GITHUB_ENV"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -126,6 +196,7 @@ jobs:
               -iname '*.app.tar.gz' -o \
               -iname '*.msi.sig' -o \
               -iname '*-setup.exe.sig' -o \
+              -iname '*.appimage.sig' -o \
               -iname '*.appimage.tar.gz.sig' -o \
               -iname '*.app.tar.gz.sig' \
             \) -exec cp -v {} "$STAGE/" \;

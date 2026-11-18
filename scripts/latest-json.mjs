@@ -21,9 +21,9 @@
  *
  * notes 从环境变量 LATEST_NOTES 读取（客户端会 JSON.parse，必须是合法 JSON 字符串）。
  *
- * 每个平台选用的安装包：
- *   windows-x86_64 : *-setup.exe（NSIS，passive/basicUi 升级模式使用）
- *   linux-x86_64   : *.AppImage.tar.gz
+ * 每个平台选用的安装包（按优先级，第一个可用且带 .sig 的胜出）：
+ *   windows-x86_64 : *-setup.exe → *.msi
+ *   linux-x86_64   : *.AppImage.tar.gz → *.AppImage
  *   darwin-*       : *.app.tar.gz
  * 只收集带 .sig 签名的产物；缺失签名时直接报错，避免发布无法升级的清单。
  */
@@ -64,13 +64,38 @@ function inferPlatform(name) {
   return null;
 }
 
+// 每个平台按优先级挑选可升级产物。不能只认一种后缀：
+// Linux 上 tauri 有时只产出 *.AppImage（tauri-action 生成的 latest.json 也指向它），
+// 若硬性要求 *.AppImage.tar.gz 会让整个发布流程失败。
+const PREFERENCE = {
+  windows: ["-setup.exe", ".msi"],
+  linux: [".appimage.tar.gz", ".appimage"],
+  darwin: [".app.tar.gz"],
+};
+
 function isUpdaterArtifact(name) {
   const lower = name.toLowerCase();
-  return (
-    lower.endsWith("-setup.exe") ||
-    lower.endsWith(".appimage.tar.gz") ||
-    lower.endsWith(".app.tar.gz")
-  );
+  return Object.values(PREFERENCE)
+    .flat()
+    .some((suffix) => lower.endsWith(suffix));
+}
+
+function pickByPreference(candidates, platform) {
+  const family = platform.split("-")[0];
+  const order = PREFERENCE[family] ?? [];
+  const usable = candidates.filter((item) => {
+    const lower = item.name.toLowerCase();
+    const sigPath = `${item.full}.sig`;
+    return (
+      order.some((suffix) => lower.endsWith(suffix)) &&
+      fs.existsSync(sigPath) &&
+      fs.readFileSync(sigPath, "utf8").trim()
+    );
+  });
+  if (usable.length === 0) return null;
+  const rank = (item) =>
+    order.findIndex((suffix) => item.name.toLowerCase().endsWith(suffix));
+  return usable.sort((a, b) => rank(a) - rank(b))[0];
 }
 
 function collect({ bundle, platform, out }) {
@@ -85,7 +110,7 @@ function collect({ bundle, platform, out }) {
 
   if (candidates.length === 0) {
     throw new Error(
-      `No updater artifacts (NSIS *.exe / *.AppImage.tar.gz / *.app.tar.gz) found in ${bundle}. ` +
+      `No updater artifacts (NSIS *.exe / *.msi / *.AppImage[.tar.gz] / *.app.tar.gz) found in ${bundle}. ` +
         "Check bundle.createUpdaterArtifacts and TAURI_SIGNING_PRIVATE_KEY.",
     );
   }
@@ -97,17 +122,16 @@ function collect({ bundle, platform, out }) {
     );
   }
 
-  const matches = candidates.filter(
-    (item) => (platform ? true : inferPlatform(item.name) === resolvedPlatform),
-  );
-  if (matches.length > 1) {
+  // 同一平台可能同时存在多种可升级产物（例如 Linux 的 *.AppImage 和 *.AppImage.tar.gz），
+  // 按 PREFERENCE 顺序挑一个，而不是要求唯一匹配。
+  const artifact = pickByPreference(candidates, resolvedPlatform);
+  if (!artifact) {
     throw new Error(
-      `Multiple updater artifacts for ${resolvedPlatform}: ` +
-        `${matches.map((item) => item.name).join(", ")}. Build one target per platform.`,
+      `No signed updater artifact for ${resolvedPlatform} in ${bundle}. ` +
+        `Expected one of: ${(PREFERENCE[resolvedPlatform.split("-")[0]] ?? []).join(", ")} ` +
+        "(with a non-empty .sig next to it).",
     );
   }
-
-  const artifact = matches[0];
   const sigPath = `${artifact.full}.sig`;
   if (!fs.existsSync(sigPath)) {
     throw new Error(`Missing signature file: ${sigPath}`);
