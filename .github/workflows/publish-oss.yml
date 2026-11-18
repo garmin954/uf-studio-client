@@ -16,7 +16,7 @@ name: Publish to Aliyun OSS
 #   OSS_ACCESS_KEY_ID / OSS_ACCESS_KEY_SECRET
 #   OSS_ENDPOINT（如 oss-cn-shenzhen.aliyuncs.com，不带 https://）/ OSS_BUCKET
 # 可选仓库变量：
-#   OSS_PUBLIC_BASE_URL（默认 https://oss.ufactory.cc）
+#   OSS_PUBLIC_BASE_URL（默认 https://update.ufactory.cc）
 #   OSS_ACL（需要对象公共读时设为 public-read）
 #   OSS_PREFIX（默认 releases/studio_client）
 
@@ -84,7 +84,7 @@ jobs:
       # OSS 对象前缀（与客户端更新地址中的路径一致）
       OSS_PREFIX: ${{ vars.OSS_PREFIX || 'releases/studio_client' }}
       # 对外访问域名
-      OSS_PUBLIC_BASE_URL: ${{ vars.OSS_PUBLIC_BASE_URL || 'https://oss.ufactory.cc' }}
+      OSS_PUBLIC_BASE_URL: ${{ vars.OSS_PUBLIC_BASE_URL || 'https://update.ufactory.cc' }}
       VERSION: ${{ inputs.version }}
       IS_PRERELEASE: ${{ inputs.prerelease }}
     steps:

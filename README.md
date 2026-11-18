@@ -39,10 +39,10 @@ GitHub Release 的原有流程（`tauri-action` 上传安装包、`latest.json`�
 
 | 名称 | 默认值 | 说明 |
 | --- | --- | --- |
-| `OSS_PUBLIC_BASE_URL` | `https://oss.ufactory.cc` | 客户端访问安装包所用的域名 |
+| `OSS_PUBLIC_BASE_URL` | `https://update.ufactory.cc` | 客户端访问安装包所用的域名 |
 | `OSS_ACL` | 不设置 | 需要对象公共读时设为 `public-read`（Bucket 已开启「阻止公共访问」时不要设置） |
 
-对象布局（与客户端更新源 `https://oss.ufactory.cc/releases/studio_client/latest.json` 对应）：
+对象布局（与客户端更新源 `https://update.ufactory.cc/releases/studio_client/latest.json` 对应）：
 
 ```
 releases/studio_client/latest.json                  # 更新清单，Cache-Control: no-cache
@@ -61,7 +61,7 @@ node scripts/latest-json.mjs collect --bundle src-tauri/target/release/bundle \
 # 合并为 latest.json
 LATEST_NOTES='{"force_update":false,"description":{"cn":"","en":""},"content":{"cn":"","en":""}}' \
   node scripts/latest-json.mjs assemble --manifests <片段所在目录> \
-  --version 1.0.13 --base-url https://oss.ufactory.cc/releases/studio_client/v1.0.13 \
+  --version 1.0.13 --base-url https://update.ufactory.cc/releases/studio_client/v1.0.13 \
   --out oss-stage/latest.json
 
 # 上传到 OSS（需先 npm install --prefix .oss-tools ali-oss@6）

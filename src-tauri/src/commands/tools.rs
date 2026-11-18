@@ -48,12 +48,11 @@ pub async fn set_beta_updater<R: tauri::Runtime>(
     );
 
     // 测试版更新源：仅内网
-    let endpoints = match parse_endpoints(&[
-        "http://192.168.1.19/releases/xarm/client/releases_beta.json",
-    ]) {
-        Ok(e) => e,
-        Err(resp) => return resp,
-    };
+    let endpoints =
+        match parse_endpoints(&["http://192.168.1.19/releases/xarm/client/releases_beta.json"]) {
+            Ok(e) => e,
+            Err(resp) => return resp,
+        };
 
     set_updater_url(app, webview, endpoints).await
 }
@@ -71,7 +70,7 @@ pub async fn set_stable_updater<R: tauri::Runtime>(
     // 生产版更新源：内网优先，OSS 兜底，GitHub 最后（外网/远程机器连不上内网时回退）
     let endpoints = match parse_endpoints(&[
         "http://192.168.1.19/releases/xarm/client/releases.json",
-        "https://oss.ufactory.cc/releases/studio_client/latest.json",
+        "https://update.ufactory.cc/releases/studio_client/latest.json",
         "https://github.com/garmin954/uf-studio-client/releases/latest/download/latest.json",
     ]) {
         Ok(e) => e,

@@ -16,7 +16,7 @@
  *      node scripts/latest-json.mjs assemble \
  *        --manifests manifests \
  *        --version 1.0.13 \
- *        --base-url https://oss.ufactory.cc/releases/studio_client/v1.0.13 \
+ *        --base-url https://update.ufactory.cc/releases/studio_client/v1.0.13 \
  *        --out oss-stage/latest.json
  *
  * notes 从环境变量 LATEST_NOTES 读取（客户端会 JSON.parse，必须是合法 JSON 字符串）。

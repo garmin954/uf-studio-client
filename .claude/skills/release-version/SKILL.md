@@ -145,7 +145,7 @@ node .claude/skills/release-version/scripts/git-release.mjs push   --version <to
 推送后告诉用户：
 
 - tag 名：`v<to>`
-- 这次 workflow 会做：三平台打包 → GitHub Release → `latest.json` 上传到 `https://oss.ufactory.cc/releases/studio_client/latest.json`
+- 这次 workflow 会做：三平台打包 → GitHub Release → `latest.json` 上传到 `https://update.ufactory.cc/releases/studio_client/latest.json`
 - 本地查看进度：`gh run list --workflow=main.yml --limit 3`
 
 ## 红线
