@@ -9,6 +9,10 @@ src-tauri/Cargo.lock
 studio.key
 studio.key.pub
 
+# OSS 发布临时目录
+oss-stage/
+.oss-tools/
+
 
 
 

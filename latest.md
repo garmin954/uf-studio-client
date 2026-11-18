@@ -2,13 +2,15 @@
 false
 # description
 ## zhCn
-优化文件下载
+新增阿里云 OSS 更新分发
 ## enUs
-Optimize file download
+Add Aliyun OSS update distribution
 # content
 ## zhCn
-优化文件下载
+- 新增阿里云 OSS 更新分发：安装包与 latest.json 会同步上传到 oss.ufactory.cc
+- 更新检查可改为从 OSS 获取版本清单，国内下载更快更稳定
 
 
 ## enUs
-Optimize file download
+- Added Aliyun OSS update distribution: installers and latest.json are uploaded to oss.ufactory.cc
+- Update checks can now fetch the version manifest from OSS for faster, more stable downloads in China

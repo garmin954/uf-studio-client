@@ -185,8 +185,53 @@ jobs:
           name: latest-json
           path: src-tauri/releases/latest.json
 
+      # 每个平台只负责打包出自己那份 updater 清单片段，
+      # 平台标识由运行器自身决定（macOS 的 *.app.tar.gz 文件名不含架构，不能靠文件名推断）
+      - name: Collect updater manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          case "${RUNNER_OS}" in
+            Linux)   OS_KEY=linux ;;
+            macOS)   OS_KEY=darwin ;;
+            Windows) OS_KEY=windows ;;
+            *) echo "::error::Unsupported runner OS: ${RUNNER_OS}"; exit 1 ;;
+          esac
+          case "${RUNNER_ARCH}" in
+            ARM64) ARCH=aarch64 ;;
+            *) ARCH=x86_64 ;;
+          esac
+          node scripts/latest-json.mjs collect \
+            --bundle src-tauri/target/release/bundle \
+            --platform "${OS_KEY}-${ARCH}" \
+            --out "updater-manifest-${{ matrix.artifact }}.json"
+
       - name: Upload bundle artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ufactory-studio-${{ matrix.artifact }}
           path: src-tauri/target/release/bundle
+
+      - name: Upload updater manifest
+        uses: actions/upload-artifact@v4
+        with:
+          name: updater-manifest-${{ matrix.artifact }}
+          path: updater-manifest-${{ matrix.artifact }}.json
+
+  # 三个平台构建完成后，调用可复用工作流把安装包发布到阿里云 OSS。
+  # 具体实现见 .github/workflows/publish-oss.yml
+  # 注意：调用可复用工作流的 job 只支持 name/uses/with/secrets/needs/if/strategy/permissions，
+  # env 和 concurrency 必须写在被调用的工作流里。
+  publish-oss:
+    name: Publish to Aliyun OSS
+    needs: [prepare-release, build]
+    uses: ./.github/workflows/publish-oss.yml
+    with:
+      version: ${{ needs.prepare-release.outputs.version }}
+      latest_notes: ${{ needs.prepare-release.outputs.latest_notes }}
+      prerelease: ${{ needs.prepare-release.outputs.prerelease }}
+    secrets:
+      OSS_ACCESS_KEY_ID: ${{ secrets.OSS_ACCESS_KEY_ID }}
+      OSS_ACCESS_KEY_SECRET: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
+      OSS_ENDPOINT: ${{ secrets.OSS_ENDPOINT }}
+      OSS_BUCKET: ${{ secrets.OSS_BUCKET }}

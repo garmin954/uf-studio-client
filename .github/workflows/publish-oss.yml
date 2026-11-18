@@ -1,0 +1,155 @@
+name: Publish to Aliyun OSS
+
+# 可复用工作流：由 main.yml 的 publish-oss job 通过
+#   uses: ./.github/workflows/publish-oss.yml
+# 调用，不单独触发。
+#
+# 职责：
+# 1) 汇总 build job 上传的各平台安装包与 updater 清单片段；
+# 2) 合并生成包含全部平台的 latest.json；
+# 3) 上传安装包 + latest.json 到阿里云 OSS。
+#
+# 需要的 Secrets（在主仓库 Settings > Secrets and variables > Actions 配置）：
+#   OSS_ACCESS_KEY_ID / OSS_ACCESS_KEY_SECRET
+#   OSS_ENDPOINT（如 oss-cn-shenzhen.aliyuncs.com，不带 https://）/ OSS_BUCKET
+# 可选仓库变量：
+#   OSS_PUBLIC_BASE_URL（默认 https://oss.ufactory.cc）
+#   OSS_ACL（需要对象公共读时设为 public-read）
+#   OSS_PREFIX（默认 releases/studio_client）
+
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: "版本号（不带 v）"
+        required: true
+        type: string
+      latest_notes:
+        description: "写入 latest.json 的 notes（JSON 字符串）"
+        required: true
+        type: string
+      prerelease:
+        description: "是否预发布，预发布只写 latest-pre.json"
+        required: false
+        type: string
+        default: "false"
+    secrets:
+      OSS_ACCESS_KEY_ID:
+        required: false
+      OSS_ACCESS_KEY_SECRET:
+        required: false
+      OSS_ENDPOINT:
+        required: false
+      OSS_BUCKET:
+        required: false
+
+# 同一版本串行发布，避免并发 run 互相覆盖 latest.json
+concurrency:
+  group: oss-publish-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  NODE_VERSION: "22"
+
+jobs:
+  publish:
+    name: Upload installers to OSS
+    runs-on: ubuntu-22.04
+    env:
+      OSS_ACCESS_KEY_ID: ${{ secrets.OSS_ACCESS_KEY_ID }}
+      OSS_ACCESS_KEY_SECRET: ${{ secrets.OSS_ACCESS_KEY_SECRET }}
+      OSS_ENDPOINT: ${{ secrets.OSS_ENDPOINT }}
+      OSS_BUCKET: ${{ secrets.OSS_BUCKET }}
+      OSS_ACL: ${{ vars.OSS_ACL }}
+      # OSS 对象前缀（与客户端更新地址中的路径一致）
+      OSS_PREFIX: ${{ vars.OSS_PREFIX || 'releases/studio_client' }}
+      # 对外访问域名
+      OSS_PUBLIC_BASE_URL: ${{ vars.OSS_PUBLIC_BASE_URL || 'https://oss.ufactory.cc' }}
+      LATEST_NOTES: ${{ inputs.latest_notes }}
+      VERSION: ${{ inputs.version }}
+      IS_PRERELEASE: ${{ inputs.prerelease }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate OSS configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          missing=()
+          [[ -z "${OSS_ACCESS_KEY_ID}" ]] && missing+=("OSS_ACCESS_KEY_ID")
+          [[ -z "${OSS_ACCESS_KEY_SECRET}" ]] && missing+=("OSS_ACCESS_KEY_SECRET")
+          [[ -z "${OSS_ENDPOINT}" ]] && missing+=("OSS_ENDPOINT")
+          [[ -z "${OSS_BUCKET}" ]] && missing+=("OSS_BUCKET")
+          if [[ ${#missing[@]} -gt 0 ]]; then
+            echo "::error::缺少仓库 Secrets: ${missing[*]}"
+            echo "请在 Settings > Secrets and variables > Actions 中添加："
+            echo "  OSS_ACCESS_KEY_ID / OSS_ACCESS_KEY_SECRET"
+            echo "  OSS_ENDPOINT（如 oss-cn-shenzhen.aliyuncs.com）/ OSS_BUCKET"
+            exit 1
+          fi
+
+      - name: Download bundle artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: ufactory-studio-*
+          path: downloads
+          merge-multiple: true
+
+      - name: Download updater manifests
+        uses: actions/download-artifact@v4
+        with:
+          pattern: updater-manifest-*
+          path: updater-manifests
+          merge-multiple: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Stage installers
+        shell: bash
+        run: |
+          set -euo pipefail
+          STAGE="oss-stage/v${VERSION}"
+          mkdir -p "$STAGE"
+          # 收集安装包本体 + 签名；macOS/Linux 的 updater 归档名大小写不一，统一用 -iname
+          find downloads -type f \( \
+              -iname '*.msi' -o \
+              -iname '*-setup.exe' -o \
+              -iname '*.dmg' -o \
+              -iname '*.deb' -o \
+              -iname '*.rpm' -o \
+              -iname '*.appimage' -o \
+              -iname '*.appimage.tar.gz' -o \
+              -iname '*.app.tar.gz' -o \
+              -iname '*.msi.sig' -o \
+              -iname '*-setup.exe.sig' -o \
+              -iname '*.appimage.tar.gz.sig' -o \
+              -iname '*.app.tar.gz.sig' \
+            \) -exec cp -v {} "$STAGE/" \;
+          echo "--- staged files ---"
+          ls -l "$STAGE"
+
+      - name: Generate latest.json
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/latest-json.mjs assemble \
+            --manifests updater-manifests \
+            --version "${VERSION}" \
+            --base-url "${OSS_PUBLIC_BASE_URL}/${OSS_PREFIX}/v${VERSION}" \
+            --out oss-stage/latest.json
+
+      - name: Install OSS uploader
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --prefix .oss-tools --no-package-lock --no-save --no-audit --no-fund "ali-oss@6"
+
+      - name: Upload to OSS
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/publish-oss.mjs
