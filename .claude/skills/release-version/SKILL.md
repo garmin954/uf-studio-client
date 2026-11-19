@@ -16,6 +16,8 @@ allowed-tools: Bash, Read, Write, Edit, AskUserQuestion
 ```bash
 node .claude/skills/release-version/scripts/version.mjs current
 git status --porcelain
+# 可选：第 7 步要用的 uflrs 配置（未配置则整步跳过）
+echo "uflrs: ${UFLRS_BASE_URL:-<未配置>} key=${UFLRS_API_KEY:+<已配置>}"
 ```
 
 - `current` 输出各文件版本号；`consistent` 为 `false` 时先停下来告诉用户版本号已经不一致，不要继续。
@@ -148,10 +150,52 @@ node .claude/skills/release-version/scripts/git-release.mjs push   --version <to
 - 这次 workflow 会做：三平台打包 → GitHub Release → `latest.json` 上传到 `https://update.ufactory.cc/releases/studio_client/latest.json`
 - 本地查看进度：`gh run list --workflow=main.yml --limit 3`
 
+## 第 7 步：通知 uflrs（可选，失败不阻断）
+
+内网 uflrs 负责把 Release 资产同步到局域网分发目录。如果配置了这两个环境变量，
+就在 workflow 成功后触发一次定向同步：
+
+| 变量 | 说明 |
+| --- | --- |
+| `UFLRS_BASE_URL` | 例如 `http://192.168.1.115:15050` |
+| `UFLRS_API_KEY` | uflrs 里该 Source 的 API Key，形如 `uflrs_sk_a1b2c3d4_…` |
+
+```bash
+node .claude/skills/release-version/scripts/notify-uflrs.mjs --version <to>
+```
+
+脚本的行为：
+
+- 用 `git rev-list -n 1 v<to>` 找到对应 commit，再找本次 tag 触发的 workflow run，轮询到结束；
+- **只有 `conclusion=success` 才发请求**。`prepare-release` 阶段 Release 就已经
+  published，但三平台资产要到 `build` 跑完才齐全，早发必然让 uflrs 拿到「资产不存在」；
+- 发请求前检查 Release 资产数量（默认 ≥3），防止资产还没上传完；
+- 未配置环境变量时直接跳过（输出 `skipped: true`），不算失败；
+- 退出码默认 0，只有加 `--strict` 才会在失败时返回 1。
+
+常用参数：
+
+| 参数 | 说明 |
+| --- | --- |
+| `--timeout 2400` | 默认只等 900 秒；三平台构建更久时调大 |
+| `--run-id 123456` | 已知 run id 时跳过查找 |
+| `--skip-assets` | 跳过资产数量检查 |
+| `--min-assets 5` | 调整资产阈值 |
+
+输出是 JSON，关注 `notified` / `uflrs_run_id` / `deduplicated` / `reason`：
+
+- `deduplicated: true` 表示 uflrs 上该 Source 已有活动任务，复用了同一个 run；
+- `reason: "workflow 未成功"` → 先修构建，不要通知；
+- `reason: "Release 资产不足"` → 稍后重跑脚本；
+- `reason: "API Key 无效、已吊销或已过期"` → 去 uflrs 的 Source 编辑对话框重新申请。
+
+**通知失败不回滚发布**：发布本身已经成功，同步最多晚一个调度周期（uflrs 有定时兜底）。
+
 ## 红线
 
 - 不要手写 `latest.md` / `release.md`，一律走 `notes.mjs write`，否则格式漂移会导致客户端解析失败。
 - 不要修改 `.ugp/` 里的任何内容（含 Tauri 签名私钥），也不要把密钥内容打印到终端或写进日志。
 - 不要用 `git push --force`、`git tag -d` 清理历史 tag，也不要 `--no-verify` 跳过钩子。
 - 用户没有明确要求时，不要推送、不要创建 GitHub Release。
+- 不要因为第 7 步通知失败就回滚发布或删 tag——同步失败是次要问题，交给 uflrs 的定时兜底。
 - 提交信息末尾保留 `Co-Authored-By: Claude Code <noreply@anthropic.com>`（脚本已自动加）。
