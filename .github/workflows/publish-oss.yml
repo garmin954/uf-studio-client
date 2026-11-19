@@ -87,6 +87,8 @@ jobs:
       OSS_PUBLIC_BASE_URL: ${{ vars.OSS_PUBLIC_BASE_URL || 'https://update.ufactory.cc' }}
       VERSION: ${{ inputs.version }}
       IS_PRERELEASE: ${{ inputs.prerelease }}
+      # workflow_call 由 main.yml 传入；workflow_dispatch 时为空，回退到 Release 里的 latest.json
+      LATEST_NOTES: ${{ inputs.latest_notes }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
